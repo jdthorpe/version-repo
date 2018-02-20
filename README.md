@@ -1,4 +1,6 @@
-A suite of repositories with semantic versioning of objects and their dependencies. 
+A suite of repositories with [semantic
+versioning](https://www.npmjs.com/package/semver) of objects and their
+dependencies. 
 
 ## Description
 
@@ -14,15 +16,15 @@ variety of objects.
 `Version-Repo`'s come in two varieties: Stores (file, DB, memory, etc.) and
 Middleware (buffers, transformers, express routers, etc.).  Repositories can
 implement Read-Only, or Read-Write interfaces and each provides at least one of
-several CRUD methods (Create, Fetch, Update, Delete). Finallhy, repositories
-may implement syncronous or deferred (Promise based) API's. The variaous API's
+several CRUD methods (Create, Fetch, Update, Delete). Finally, repositories
+may implement synchronous or deferred (Promise based) API's. The various API's
 are documented in the included `./src/typings.d.ts` file.
 
 
 Finally, the included function `calculate_dependencies` implements the
 [C3](http://www.python.org/download/releases/2.3/mro/) algorithm for
 identifying a consistent set of resources from an array of resources and their
-requirements.
+required version.
 
 
 ### Examples:
@@ -99,7 +101,7 @@ my_file_repo.creae({name:"my-resource",version:"1.2.3"},
 	console.log(resource.object);   // eventually logs: { hello: 'world' }
 	console.log(resource.version);  // eventually logs: '1.2.3'
 	
-	//  enumerage packages
+	// enumerate packages
 	return json_repo.packages();
 
 }).then((resources) => {
@@ -120,8 +122,8 @@ my_file_repo.creae({name:"my-resource",version:"1.2.3"},
 	
 	console.log(versions);  // eventually logs: [ '1.2.3' ]
 	
-	// Calulate the set of matching dependencies for an array of requred ojbects.
-	// (This is admittidly a trivial example, see the tesf files for more complex examples):
+	// Calculate the set of matching dependencies for an array of required objects.
+	// (This is admittedly a trivial example, see the test files for more complex examples):
 	return calculate_dependencies([ {name:"my-resource",version:"^1.0.0"}, ],json_repo);
 
 }).then((dependents) => {
@@ -130,19 +132,11 @@ my_file_repo.creae({name:"my-resource",version:"1.2.3"},
 
 })
 
-
-// REQUIREMENT RESOLUTION
-//my_file_repo
-repo.resolve({'a','~1.1.1'},my_mem_repo).then((x) => { 
-		console.log(x)
-	})
+<!--
 
 // sugar / cruft
 my_remote_repo.resolve({'a','~1.1.1'})
-```
 
-
-<!--
 
 NOTE THAT THE FOLLOWING IS NOT ITEMPOTENT, so it's important not to
 `upload.array()` on a parent of the a route that the 
