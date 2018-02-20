@@ -1,9 +1,6 @@
-
-# Version-Repo	
-
 A suite of repositories with semantic versioning of objects and their dependencies. 
 
-## The Problem 
+## Description
 
 This is yet another solution to the age old problem of managing multiple
 versions of resources and the versions of other resources on which each depends. 
@@ -29,6 +26,10 @@ requirements.
 
 
 ### Examples:
+
+Note that these examples also demonstrate
+[version-repo-node](https://www.npmjs.com/package/version-repo-node) and make
+use of [temp](https://www.npmjs.com/package/temp)
 
 ```JavaScript
 // Create an in-memory versioned repository
@@ -82,14 +83,16 @@ json_repo = dTransform(// d is for deferred
 
 
 // ----------------------
-// now some actual CRUD
+// Now some actual CRUD
 // ----------------------
 
 // store a string in the file-system based repo
-my_file_repo.creae({name:"my-resource",version:"1.2.3"},'{"hello":"world"}').then(() => {
+my_file_repo.creae({name:"my-resource",version:"1.2.3"},
+					'{"hello":"world"}'
+					).then(() => {
 
-// then fetch it from the JSON repo
-return  json_repo.fetch({name:"my-resource",version:"^1.x"});
+	// then fetch it from the JSON repo
+	return json_repo.fetch({name:"my-resource",version:"^1.x"});
 
 }).then((resource) => {
 	
@@ -98,6 +101,7 @@ return  json_repo.fetch({name:"my-resource",version:"^1.x"});
 	
 	//  enumerage packages
 	return json_repo.packages();
+
 }).then((resources) => {
 	
 	console.log(resources);  // eventually logs: [ 'my-resource' ]	
@@ -118,7 +122,7 @@ return  json_repo.fetch({name:"my-resource",version:"^1.x"});
 	
 	// Calulate the set of matching dependencies for an array of requred ojbects.
 	// (This is admittidly a trivial example, see the tesf files for more complex examples):
-	return calculate_dependencies([ {name:"my-resource",version:"^1.x"}, ],json_repo);
+	return calculate_dependencies([ {name:"my-resource",version:"^1.0.0"}, ],json_repo);
 
 }).then((dependents) => {
 	
@@ -139,6 +143,7 @@ my_remote_repo.resolve({'a','~1.1.1'})
 
 
 <!--
+
 NOTE THAT THE FOLLOWING IS NOT ITEMPOTENT, so it's important not to
 `upload.array()` on a parent of the a route that the 
 
