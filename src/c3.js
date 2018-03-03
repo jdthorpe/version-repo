@@ -1,14 +1,14 @@
+"use strict";
 // C3 Method Resolution Order
 //
 // http://www.python.org/download/releases/2.3/mro/
 // http://www.python.org/download/releases/2.3/license/
-"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 function default_1(name) {
     return new C3(name);
 }
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = default_1;
-var C3 = (function () {
+var C3 = /** @class */ (function () {
     function C3(name) {
         this.name = name;
         this.map = {};

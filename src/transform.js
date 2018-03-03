@@ -1,6 +1,7 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var Promise = require("bluebird");
-var dTransform = (function () {
+var dTransform = /** @class */ (function () {
     function dTransform(store, storify, destorify) {
         this.store = store;
         this.storify = storify;
@@ -49,7 +50,7 @@ var dTransform = (function () {
     return dTransform;
 }());
 exports.dTransform = dTransform;
-var sTransform = (function () {
+var sTransform = /** @class */ (function () {
     function sTransform(store, storify, destorify) {
         this.store = store;
         this.storify = storify;

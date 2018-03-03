@@ -1,5 +1,6 @@
 "use strict";
-var semver_1 = require('semver');
+Object.defineProperty(exports, "__esModule", { value: true });
+var semver_1 = require("semver");
 function is_package_loc(x) {
     if (x === undefined)
         return false;

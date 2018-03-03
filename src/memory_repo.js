@@ -1,8 +1,8 @@
 "use strict";
-var utils_1 = require('./utils');
-var semver = require('semver');
-//-- import {dict,sync_repository, pakcage_dict, package_loc} from "./typings"
-var MemoryRepo = (function () {
+Object.defineProperty(exports, "__esModule", { value: true });
+var utils_1 = require("./utils");
+var semver = require("semver");
+var MemoryRepo = /** @class */ (function () {
     function MemoryRepo(options) {
         if (options === void 0) { options = {}; }
         this.options = options;
@@ -54,7 +54,7 @@ var MemoryRepo = (function () {
         // validate the options
         options = utils_1.validate_options_range(options);
         // does the package exist?
-        if (!this.store.hasOwnProperty(options.name) ||
+        if (!this.store.hasOwnProperty(options.name) || // is there a package container
             !Object.keys(this.store[options.name]).length) {
             throw new Error("No such package: " + options.name);
         }

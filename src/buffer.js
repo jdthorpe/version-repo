@@ -1,20 +1,27 @@
-///<path ="./typings.d.ts"/>
 "use strict";
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+///<path ="./typings.d.ts"/>
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
 //-- import {resource_data,deferred_repository, repository, package_loc} from "./typings"
-var Promise = require('bluebird');
-var semver = require('semver');
+var Promise = require("bluebird");
+var semver = require("semver");
 var processed_buffer_1 = require("./processed_buffer");
-var ReadonlyBuffer = (function (_super) {
+var ReadonlyBuffer = /** @class */ (function (_super) {
     __extends(ReadonlyBuffer, _super);
     function ReadonlyBuffer(remote_store, options) {
         if (options === void 0) { options = {}; }
-        _super.call(this, remote_store, function (x) { return x; }, options);
-        this.options = options;
+        var _this = _super.call(this, remote_store, function (x) { return x; }, options) || this;
+        _this.options = options;
+        return _this;
     }
     ReadonlyBuffer.prototype.fetch = function (request, cached) {
         var _this = this;

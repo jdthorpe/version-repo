@@ -1,8 +1,9 @@
 "use strict";
-var memory_repo_1 = require('./memory_repo');
-var Promise = require('bluebird');
-var semver = require('semver');
-var ProcessedBuffer = (function () {
+Object.defineProperty(exports, "__esModule", { value: true });
+var memory_repo_1 = require("./memory_repo");
+var Promise = require("bluebird");
+var semver = require("semver");
+var ProcessedBuffer = /** @class */ (function () {
     function ProcessedBuffer(remote_store, processor, options) {
         if (options === void 0) { options = {}; }
         this.remote_store = remote_store;

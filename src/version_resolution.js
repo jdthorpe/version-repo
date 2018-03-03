@@ -1,14 +1,15 @@
 "use strict";
-var semver_1 = require('semver');
+Object.defineProperty(exports, "__esModule", { value: true });
+var semver_1 = require("semver");
 var utils_1 = require("./utils");
 //-- import * as Q from 'q';
-var Promise = require('bluebird');
+var Promise = require("bluebird");
 var c3_1 = require("./c3");
 function calculate_dependencies(
-    // versions is a dictionary with the where each key correspondes to a
-    // dependency name, and each value is a string or vector of strings with 
-    // the available versions for that key
-    x, dependency_repo) {
+// versions is a dictionary with the where each key correspondes to a
+// dependency name, and each value is a string or vector of strings with 
+// the available versions for that key
+x, dependency_repo) {
     if (!x.every(utils_1.is_package_loc))
         throw new Error("x is not an array of package locations");
     if (dependency_repo === undefined)
