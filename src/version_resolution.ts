@@ -1,5 +1,5 @@
 
-import { package_loc, resource_data, readable_repository } from   "./typings";
+import { package_loc, resource_data, bare_deferred_readable_repository,readable_repository, sync_readable_repository } from   "./typings";
 import { maxSatisfying, satisfies } from 'semver';
 
 import { is_package_loc } from "./utils"
@@ -25,14 +25,14 @@ export function calculate_dependencies  (
         // dependency name, and each value is a string or vector of strings with 
         // the available versions for that key
         x: package_loc[],
-        dependency_repo:readable_repository<package_loc[]>,
+        repo:bare_deferred_readable_repository,
         ):Promise<package_loc[]>
 {
 
     if(!x.every(is_package_loc))
         throw new Error("x is not an array of package locations")
-    if(dependency_repo===undefined)
-        throw new Error("missing dependency_repo");
+    if(repo===undefined)
+        throw new Error("missing repo");
 
     var VERSIONS:{[name:string]:string} = {}
     var MRO = c3("main")
@@ -57,8 +57,10 @@ export function calculate_dependencies  (
 
             // We're done! (whew, that was easy).
             return Promise.resolve(
-                MRO.run().slice(1).map( (name: string) => {
-//console.log("MRO.run().slice(1).map(", name,VERSIONS[name])
+                //formerly: MRO.run().slice(1).map( (name: string) => {
+                MRO.run().map( (name: string) => {
+
+                    console.log(JSON.stringify({ name:name, version:VERSIONS[name] },null,4))
                     return {
                         name:name, 
                         version:VERSIONS[name]
@@ -91,7 +93,7 @@ export function calculate_dependencies  (
             stack.splice(d.depth); stack.push(d);
 
             // get the list of available versions
-            return Promise.resolve(dependency_repo.versions(d.name))
+            return Promise.resolve(repo.versions(d.name))
                 .then( (versions:string[]) => {
 
                     // get the maximum version satisfying the current requirement 
@@ -103,13 +105,21 @@ export function calculate_dependencies  (
                     VERSIONS[d.name] = v;
 
                     // GATHER ANY DEPENDENCIES OF THIS VERSION
-                    return Promise.resolve(dependency_repo.fetch({name:d.name,version:v}))
+                    return Promise.resolve(repo.fetchOne({name:d.name,version:v},{novalue:true}))
                             .then( x => {
+                                if(!x.hasOwnProperty("depends"))
+                                    // nothing to do.
+                                    return __resolve__();
 
-                                var new_dependencies:package_descriptor[] = (<resource_data<any>>x).object;
+                                var depends = x.depends;
 
-                                if(!Array.isArray(new_dependencies))
-                                    throw new Error(`invalid dependencencies object: ${JSON.stringify(x)}` )
+                                var new_dependencies:package_descriptor[] = Object.keys(depends)
+                                    .filter(k => depends.hasOwnProperty(k))
+                                    .map(k => {return {
+                                                        name:k,
+                                                        version:depends[k]
+                                                      };
+                                            })
 
                                 new_dependencies.map( (nd:package_descriptor) => {
 
@@ -135,34 +145,61 @@ export function calculate_dependencies  (
         }
     }
 
+    // this needs to live where `stack` is in scope...
     function noSuchVersionMessage(d:package_loc,versions:string[]){
         return `No such version "${d.version}" of package "${d.name}". Possible versions include:
        - "${versions.join('"\n        - "')}"
     (${stack.map(x => JSON.stringify(x)).join(" > ")})`;
-
     }
+}
+
+export function calculate_dependencies_sync  (
+        // versions is a dictionary with the where each key correspondes to a
+        // dependency name, and each value is a string or vector of strings with 
+        // the available versions for that key
+        x: package_loc[],
+        repo:sync_readable_repository<any>,
+        ):package_loc[]
+{
+
+    if(!x.every(is_package_loc))
+        throw new Error("x is not an array of package locations")
+    if(repo===undefined)
+        throw new Error("missing repo");
+
+    var VERSIONS:{[name:string]:string} = {}
+    var MRO = c3("main")
+
+    // a graph of require statements for determinig sources of conflict
+    var STACKS: { [x:string]: package_descriptor[][] } = {};
+    var stack:package_descriptor[] = []
+
+    var dependencies:package_descriptor[] = x.map(
+        (y:package_loc) =>  { 
+            return {name: y.name,
+            version: y.version,
+            depth: 0,
+            }
+        })
 
 
-
-/*
     // synchronous implementation
     while(dependencies.length){
 
         // acuquire the next dependenciy
         var d:package_descriptor = dependencies.shift()
 
-        MRO.add((d.depth > 0) ? stack[d.depth].name :"main")
+        MRO.add((d.depth > 0) ? stack[d.depth - 1].name :"main",d.name)
 
         if(VERSIONS.hasOwnProperty(d.name) ){
             // THE VERSION OF THIS PACKAGE HAS ALREADY BEEN DETERMINED
             
-            if(!satisfies(VERSIONS[d.name],d.version){
+            if(!satisfies(VERSIONS[d.name],d.version)){
                 // THE NEW DEPENDENCY CONFLICTS WITH A PRIOR ONE...
                 var m:string = 
-                    STACKS[d.name].map( 
-                        (y:package_descriptor[][]) => 
-                            (y.map( (s: package_descriptor[]) => 
-                                      s.map(JSON.stringify(p))).join(" > ")).join("\n  + ")
+                    STACKS[d.name]
+                    .map( (y:package_descriptor[]) => 
+                                   y.map(x => JSON.stringify(x)).join(" > ")).join("\n  + ")
                 throw new Error("Version Conflict:\n  + "+m)
             }
             continue;
@@ -173,80 +210,62 @@ export function calculate_dependencies  (
         stack.splice(d.depth); stack.push(d);
 
         // get the list of available versions
-        var versions:string[] = dependency_repo.versions_sync(d.name)
+        var versions:string[] = repo.versions(d.name)
 
         // get the maximum version satisfying the current requirement 
-        var v:string = maxSatisfying(versions,ranges_dict[name]);
+        var v:string = maxSatisfying(versions,d.version);
         if(!v) 
-            throw new Error(`No such version "${d.version}" of package "${d.name}". Possible versions include:
-       - "${versions.join('"\n        - "')}"
-    (${stack.map(JSON.stringify).join(" > ")})`);
+             throw new Error(noSuchVersionMessage(d,versions));
 
         // RECORD THE VERSION
         VERSIONS[d.name] = v;
 
-        // GATHER ANY DEPENDENCIES OF THIS VERSION
-        var new_dependencies:package_descriptor[] = dependency_repo.fetch_sync({name:d.name,version:v})
-        for(var i = 0; i < new_dependencies.length; i++){
+        const obj = repo.fetchOne({name:d.name,version:v},{novalue:true});
+        if(!obj.hasOwnProperty("depends"))
+            continue;
+        var depends = obj.depends;
 
-            var nd = new_dependencies[i]
+        // GATHER ANY DEPENDENCIES OF THIS VERSION
+        var new_dependencies:package_descriptor[] = Object.keys(depends)
+            .filter(k => depends.hasOwnProperty(k))
+            .map(k => {return {
+                                name:k,
+                                version:depends[k]
+                              };
+                    });
+
+        new_dependencies.map( (nd:package_descriptor) => {
+
+            if(!is_package_loc(nd))
+                throw new Error("internal error; got an invalid package descriptor")
 
             // append the depth to each new dependency
             nd.depth = d.depth + 1;
 
             // KEEP TRACK OF THE PATH TO EACH PACKAGE IMPORT
-            if(! STACKS.hasOwnPropert(nd.name))
+            if(! STACKS.hasOwnProperty(nd.name))
                 STACKS[nd.name] = []
-            STACKS[nd.name].push(stack.splice().concat(nd))
-        }
+            STACKS[nd.name].push(stack.slice().concat(nd))
+
+        });
 
         // append add the new dependencies to the dependencies to be determined
-        Array.prototype.unshift.apply(dependencies,new_dependencies)
+        Array.prototype.unshift.apply(dependencies,new_dependencies);
 
     }
 
-    return MRO.run().map( (name: string) => [name, VERSIONS[name]])
+    return MRO.run().slice(1).map( (name: string) => {
+                    return {
+                        name:name, 
+                        version:VERSIONS[name]
+                    }
+                });
 
-   */
-
-}
-
-/*
-function maxSatisfying (versions:string[],ranges:string[]):string{
-
-    if(!ranges.length) return null;
-    
-    // fast path out for a common scenario.
-    if(ranges.length == 1)
-        return maxSatisfying(versions, ranges[0]);
-
-    var current_version:string,
-        indx:number;
-
-    // be polite and make a local copy of versions
-    versions = versions.slice();
-
-
-    while(versions.length){
-        current_version =  maxSatisfying(versions, ranges[0]);
-        if(ranges
-             .map(function(x){satisfies(current_version,x)})
-             .every(function(x:any){return !!x;}))
-            // the current version is satisfactory so return it.
-            return current_version;
-
-        // the current version is somehow 
-        // unsatisfactory so remove it from the versions
-        indx = versions.indexOf(current_version);
-        versions.splice(indx,1);
+    // this needs to live where `stack` is in scope...
+    function noSuchVersionMessage(d:package_loc,versions:string[]){
+        return `No such version "${d.version}" of package "${d.name}". Possible versions include:
+       - "${versions.join('"\n        - "')}"
+    (${stack.map(x => JSON.stringify(x)).join(" > ")})`;
     }
-
-    // same api as semver.maxSatisfying
-    return null;
 }
-
-*/
-
-
-
 

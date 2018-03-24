@@ -60,4 +60,12 @@ function validate_options_range(options) {
     }
 }
 exports.validate_options_range = validate_options_range;
+function isPackageLoc(x) {
+    var keys = Object.keys(x).filter(function (n) { return x.hasOwnProperty(n); });
+    if (keys.length != 2)
+        return false;
+    keys.sort();
+    return keys[0] == "name" && keys[1] == "version";
+}
+exports.isPackageLoc = isPackageLoc;
 //# sourceMappingURL=utils.js.map

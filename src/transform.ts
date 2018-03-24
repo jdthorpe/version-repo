@@ -1,8 +1,12 @@
 
-import { package_loc, resource_data, repository, deferred_repository, sync_repository } from   "./typings";
+import { package_loc, resource_data, repository, deferred_repository, sync_repository, fetch_opts } from   "./typings";
 
 import * as Promise from "bluebird"
 import * as semver from 'semver';
+import { calculate_dependencies_sync } from './version_resolution';
+import { isPackageLoc } from './utils';
+
+
 
 
 export class dTransform<S,T>  implements deferred_repository<T> {
@@ -14,25 +18,77 @@ export class dTransform<S,T>  implements deferred_repository<T> {
     // ------------------------------
     // CRUD
     // ------------------------------
-    fetch(request:package_loc,cached_range=true):Promise<resource_data<T>>{
-        var out:any;
-        return (Promise.resolve(this.store.fetch(request))
-                .then( (x) => {
-                    out = x;
-                    return Promise.resolve(this.destorify(<S>x.object))
-                            .then( (y:T) => {
-                                out.object = y;
-                                return <resource_data<T>>out
-                            });
-                }))
+
+    create(options:resource_data<T>){
+        return Promise.resolve(this.storify(options.value))
+            .then((y:S) => {
+                
+                var obj:resource_data<S> = {
+                    name:options.name,
+                    version:options.version,
+                    upsert:options.upsert,
+                    value:y,
+                };
+                if(options.hasOwnProperty("depends"))
+                    obj.depends = options.depends;
+                return this.store.create(obj);
+            })
     }
 
-    create(request:package_loc,x:T){
-        return Promise.resolve(this.storify(x)) .then((y:S) => this.store.create(request,y))
+    update(options:resource_data<T>){
+        return Promise.resolve(this.storify(options.value)) 
+            .then((y:S) => {
+                
+                var obj:resource_data<S> = {
+                    name:options.name,
+                    version:options.version,
+                    upsert:options.upsert,
+                    value:y,
+                };
+                if(options.hasOwnProperty("depends"))
+                    obj.depends = options.depends;
+                return this.store.update(obj);
+            });
     }
 
-    update(request:package_loc,x:T){
-        return Promise.resolve(this.storify(x)) .then((y:S) => this.store.update(request,y))
+    fetch(query:package_loc|package_loc[],opts?:fetch_opts):Promise<resource_data<T>[]>{
+        if((!!opts) && !!opts.novalue){
+            var out:Promise<resource_data<any>[]> = Promise.resolve(this.store.fetch(query,opts));
+            return (<Promise<resource_data<T>[]>>out);
+        }
+        return Promise.resolve(this.store.fetch(<package_loc[]>query,opts))
+                .then( x => 
+                        Promise.all(x.map(r => Promise.resolve(this.destorify(<S>r.value))
+                                                        .then(z => {
+                                                            var out:resource_data<T> = {name:r.name,version:r.version, value:z};
+                                                            if(r.hasOwnProperty("depends"))
+                                                                out.depends = r.depends
+                                                            return out}))));
+    }
+
+    fetchOne(query,opts?:fetch_opts){
+        if((!!opts) && !!!opts.novalue){
+            var out:Promise<resource_data<any>> = Promise.resolve(this.store.fetchOne(query,opts));
+            return (<Promise<resource_data<T>>>out);
+        }
+        return Promise.resolve(this.store.fetchOne(query,opts))
+                        .then(x => Promise.resolve(this.destorify(<S>x.value))
+                                            .then(val => {
+                                                        var out:resource_data<T> =  {
+                                                            name: x.name,
+                                                            version: x.version,
+                                                            value: val,
+                                                        };
+                                                        if(x.hasOwnProperty("depends")) out.depends = x.depends;
+                                                    return out;
+                                            }));
+    }
+
+    depends(x:package_loc):Promise<package_loc[]>;
+    depends(x:package_loc[]):Promise<package_loc[]>;
+    depends(x:{[key: string]:string}):Promise<package_loc[]>;
+    depends(x:any):Promise<package_loc[]>{
+        return Promise.resolve(this.store.depends(x));
     }
 
     del(request:package_loc){
@@ -68,19 +124,75 @@ export class sTransform<S,T>  implements sync_repository<T> {
     // ------------------------------
     // CRUD
     // ------------------------------
-    fetch(request:package_loc,cached_range=true):resource_data<T>{
-        var x:any = this.store.fetch(request);
-        x.object = this.destorify(x.object);
-        return <resource_data<T>>x;
+
+    create(options:resource_data<T>){
+        var val:resource_data<S> = {
+            name:options.name,
+            version:options.version,
+            upsert:options.upsert,
+            value:this.storify(options.value),
+        }
+        if(options.hasOwnProperty("depends"))
+            val.depends = options.depends;
+        return this.store.create(val);
     }
 
-    create(request:package_loc,x:T){
-        return this.store.create(request,this.storify(x))
+    update(options:resource_data<T>){
+        var val:resource_data<S> = {
+            name:options.name,
+            version:options.version,
+            upsert:options.upsert,
+            value:this.storify(options.value),
+        }
+        if(options.hasOwnProperty("depends"))
+            val.depends = options.depends;
+        return this.store.update(val);
     }
 
-    update(request:package_loc,x:T){
-        return this.store.update(request,this.storify(x))
+
+    fetch(query:package_loc|package_loc[],opts?:fetch_opts):resource_data<T>[]{
+        return this.store.fetch(query,opts)
+                    .map(x => {
+                            var out:resource_data<T> = {
+                                name:x.name,
+                                version:x.version,
+                            };
+                            if((!opts) || !opts.novalue)
+                                out.value = this.destorify(x.value);
+                            if(x.hasOwnProperty("depends"))
+                                out.depends = x.depends
+                            return out
+                    });
     }
+
+    fetchOne(query:package_loc ,opts?:fetch_opts):resource_data<T>{
+        const x = this.store.fetchOne(query,opts);
+        var out:resource_data<T> = {
+            name:x.name,
+            version:x.version,
+        };
+        if((!opts) || !opts.novalue)
+            out.value = this.destorify(x.value);
+        if(x.hasOwnProperty("depends")) out.depends = x.depends;
+        return out;
+    }
+
+    depends(x:package_loc):package_loc[];
+    depends(x:package_loc[]):package_loc[];
+    depends(x:{[key: string]:string}):package_loc[];
+    depends(x){
+        if(Array.isArray(x)){
+            return calculate_dependencies_sync(x,this);
+        }if(isPackageLoc(x)){
+            return calculate_dependencies_sync([x],this);
+        }else{
+            var y:package_loc[] =  
+                Object.keys(x) 
+                        .filter(y => x.hasOwnProperty(y))
+                        .map(y => { return {name:y,version:x[y]} })
+            return calculate_dependencies_sync(y,this);
+        }
+    };
 
     del(request:package_loc){
         return this.store.del(request)

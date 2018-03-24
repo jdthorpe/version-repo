@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Promise = require("bluebird");
+var version_resolution_1 = require("./version_resolution");
+var utils_1 = require("./utils");
 var dTransform = /** @class */ (function () {
     function dTransform(store, storify, destorify) {
         this.store = store;
@@ -10,27 +12,74 @@ var dTransform = /** @class */ (function () {
     // ------------------------------
     // CRUD
     // ------------------------------
-    dTransform.prototype.fetch = function (request, cached_range) {
+    dTransform.prototype.create = function (options) {
         var _this = this;
-        if (cached_range === void 0) { cached_range = true; }
-        var out;
-        return (Promise.resolve(this.store.fetch(request))
+        return Promise.resolve(this.storify(options.value))
+            .then(function (y) {
+            var obj = {
+                name: options.name,
+                version: options.version,
+                upsert: options.upsert,
+                value: y,
+            };
+            if (options.hasOwnProperty("depends"))
+                obj.depends = options.depends;
+            return _this.store.create(obj);
+        });
+    };
+    dTransform.prototype.update = function (options) {
+        var _this = this;
+        return Promise.resolve(this.storify(options.value))
+            .then(function (y) {
+            var obj = {
+                name: options.name,
+                version: options.version,
+                upsert: options.upsert,
+                value: y,
+            };
+            if (options.hasOwnProperty("depends"))
+                obj.depends = options.depends;
+            return _this.store.update(obj);
+        });
+    };
+    dTransform.prototype.fetch = function (query, opts) {
+        var _this = this;
+        if ((!!opts) && !!opts.novalue) {
+            var out = Promise.resolve(this.store.fetch(query, opts));
+            return out;
+        }
+        return Promise.resolve(this.store.fetch(query, opts))
             .then(function (x) {
-            out = x;
-            return Promise.resolve(_this.destorify(x.object))
-                .then(function (y) {
-                out.object = y;
+            return Promise.all(x.map(function (r) { return Promise.resolve(_this.destorify(r.value))
+                .then(function (z) {
+                var out = { name: r.name, version: r.version, value: z };
+                if (r.hasOwnProperty("depends"))
+                    out.depends = r.depends;
                 return out;
-            });
-        }));
+            }); }));
+        });
     };
-    dTransform.prototype.create = function (request, x) {
+    dTransform.prototype.fetchOne = function (query, opts) {
         var _this = this;
-        return Promise.resolve(this.storify(x)).then(function (y) { return _this.store.create(request, y); });
+        if ((!!opts) && !!!opts.novalue) {
+            var out = Promise.resolve(this.store.fetchOne(query, opts));
+            return out;
+        }
+        return Promise.resolve(this.store.fetchOne(query, opts))
+            .then(function (x) { return Promise.resolve(_this.destorify(x.value))
+            .then(function (val) {
+            var out = {
+                name: x.name,
+                version: x.version,
+                value: val,
+            };
+            if (x.hasOwnProperty("depends"))
+                out.depends = x.depends;
+            return out;
+        }); });
     };
-    dTransform.prototype.update = function (request, x) {
-        var _this = this;
-        return Promise.resolve(this.storify(x)).then(function (y) { return _this.store.update(request, y); });
+    dTransform.prototype.depends = function (x) {
+        return Promise.resolve(this.store.depends(x));
     };
     dTransform.prototype.del = function (request) {
         return Promise.resolve(this.store.del(request));
@@ -59,18 +108,70 @@ var sTransform = /** @class */ (function () {
     // ------------------------------
     // CRUD
     // ------------------------------
-    sTransform.prototype.fetch = function (request, cached_range) {
-        if (cached_range === void 0) { cached_range = true; }
-        var x = this.store.fetch(request);
-        x.object = this.destorify(x.object);
-        return x;
+    sTransform.prototype.create = function (options) {
+        var val = {
+            name: options.name,
+            version: options.version,
+            upsert: options.upsert,
+            value: this.storify(options.value),
+        };
+        if (options.hasOwnProperty("depends"))
+            val.depends = options.depends;
+        return this.store.create(val);
     };
-    sTransform.prototype.create = function (request, x) {
-        return this.store.create(request, this.storify(x));
+    sTransform.prototype.update = function (options) {
+        var val = {
+            name: options.name,
+            version: options.version,
+            upsert: options.upsert,
+            value: this.storify(options.value),
+        };
+        if (options.hasOwnProperty("depends"))
+            val.depends = options.depends;
+        return this.store.update(val);
     };
-    sTransform.prototype.update = function (request, x) {
-        return this.store.update(request, this.storify(x));
+    sTransform.prototype.fetch = function (query, opts) {
+        var _this = this;
+        return this.store.fetch(query, opts)
+            .map(function (x) {
+            var out = {
+                name: x.name,
+                version: x.version,
+            };
+            if ((!opts) || !opts.novalue)
+                out.value = _this.destorify(x.value);
+            if (x.hasOwnProperty("depends"))
+                out.depends = x.depends;
+            return out;
+        });
     };
+    sTransform.prototype.fetchOne = function (query, opts) {
+        var x = this.store.fetchOne(query, opts);
+        var out = {
+            name: x.name,
+            version: x.version,
+        };
+        if ((!opts) || !opts.novalue)
+            out.value = this.destorify(x.value);
+        if (x.hasOwnProperty("depends"))
+            out.depends = x.depends;
+        return out;
+    };
+    sTransform.prototype.depends = function (x) {
+        if (Array.isArray(x)) {
+            return version_resolution_1.calculate_dependencies_sync(x, this);
+        }
+        if (utils_1.isPackageLoc(x)) {
+            return version_resolution_1.calculate_dependencies_sync([x], this);
+        }
+        else {
+            var y = Object.keys(x)
+                .filter(function (y) { return x.hasOwnProperty(y); })
+                .map(function (y) { return { name: y, version: x[y] }; });
+            return version_resolution_1.calculate_dependencies_sync(y, this);
+        }
+    };
+    ;
     sTransform.prototype.del = function (request) {
         return this.store.del(request);
     };

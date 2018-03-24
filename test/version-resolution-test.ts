@@ -1,13 +1,12 @@
 
 import chai = require('chai');
-var chaiAsPromised = require("chai-as-promised");
-chai.use(chaiAsPromised);
+chai.use(require("chai-as-promised"));
 chai.should();
 var expect = chai.expect;
 
 import {MemoryRepo} from '../src/memory_repo';
-var Que = require('q');
-Que.longStackSupport = true;
+//-- var Que = require('q');
+//-- Que.longStackSupport = true;
 
 import { package_loc } from "../src/typings"
 
@@ -40,23 +39,23 @@ import { calculate_dependencies } from '../src/version_resolution';
 //-- 
 //--     }else{ // parameterized with objects
 
-        repo.create({name:"a",version:"1.0.0"},[]);
-        repo.create({name:"a",version:"1.1.1"},[]);
-        repo.create({name:"a",version:"1.1.2"},[]);
-        repo.create({name:"a",version:"1.1.3"},[]);
-        repo.create({name:"a",version:"1.2.3"},[]);
-        repo.create({name:"a",version:"2.0.0"},[]);
+        repo.create({name:"a",version:"1.0.0",value:[]});
+        repo.create({name:"a",version:"1.1.1",value:[]});
+        repo.create({name:"a",version:"1.1.2",value:[]});
+        repo.create({name:"a",version:"1.1.3",value:[]});
+        repo.create({name:"a",version:"1.2.3",value:[]});
+        repo.create({name:"a",version:"2.0.0",value:[]});
 
-        repo.create({name:"b",version:"1.0.0"},[{name:"a",version:"~1.0.0"}]);
-        repo.create({name:"b",version:"1.1.1"},[{name:"a",version:"~1.1.1"}]);
-        repo.create({name:"b",version:"1.1.3"},[{name:"a",version:"1.1.2"}]);
-        repo.create({name:"b",version:"1.1.4"},[{name:"a",version:"~2.0.0"}]);
+        repo.create({name:"b",version:"1.0.0",value:[{name:"a",version:"~1.0.0"}]});
+        repo.create({name:"b",version:"1.1.1",value:[{name:"a",version:"~1.1.1"}]});
+        repo.create({name:"b",version:"1.1.3",value:[{name:"a",version:"1.1.2"}]});
+        repo.create({name:"b",version:"1.1.4",value:[{name:"a",version:"~2.0.0"}]});
 
-        repo.create({name:"c",version:"1.0.0"},[]);
-        repo.create({name:"c",version:"1.1.1"},[{name:"b",version:"~1.1.1"}]);
-        repo.create({name:"c",version:"1.1.2"},[{name:"b",version:"~1.1.2"}]);
-        repo.create({name:"c",version:"1.1.3"},[{name:"b",version:"1.1.1"},{name:"a",version:"2.0.0"}]);// internally conflicted;
-        repo.create({name:"c",version:"1.1.4"},[{name:"b",version:"~1.1.3"}]);
+        repo.create({name:"c",version:"1.0.0",value:[]});
+        repo.create({name:"c",version:"1.1.1",value:[{name:"b",version:"~1.1.1"}]});
+        repo.create({name:"c",version:"1.1.2",value:[{name:"b",version:"~1.1.2"}]});
+        repo.create({name:"c",version:"1.1.3",value:[{name:"b",version:"1.1.1"},{name:"a",version:"2.0.0"}]});// internally conflicted;
+        repo.create({name:"c",version:"1.1.4",value:[{name:"b",version:"~1.1.3"}]});
 
 //--     }
 

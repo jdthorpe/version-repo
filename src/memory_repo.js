@@ -2,11 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("./utils");
 var semver = require("semver");
+var version_resolution_1 = require("./version_resolution");
 var MemoryRepo = /** @class */ (function () {
     function MemoryRepo(options) {
         if (options === void 0) { options = {}; }
         this.options = options;
         this.store = {};
+        this.dependencies = {};
     }
     // connection
     MemoryRepo.prototype.connect = function () {
@@ -18,87 +20,139 @@ var MemoryRepo = /** @class */ (function () {
     // ------------------------------
     // CRUD
     // ------------------------------
-    MemoryRepo.prototype.create = function (options, pkg) {
+    MemoryRepo.prototype.create = function (options) {
         if (this.options.single_version && this.store.hasOwnProperty(options.name)) {
             throw new Error("Duplicate definition of library (" + options.name + ") in single version repository.");
         }
         // validate the options
-        options = utils_1.validate_options(options);
-        if (!options.version) {
+        var loc = utils_1.validate_options(options);
+        if (!loc.version) {
             throw new Error("Version parameter is required to create a package");
         }
-        if (this.store.hasOwnProperty(options.name)) {
+        if (this.store.hasOwnProperty(loc.name)) {
             // CREATE THE PACKAGE
-            //--             if(this.store[options.name][options.version]){
-            //--                 throw new Error(`Version ${options.version} of package '${options.name}' already exists`);
+            //--             if(this.store[loc.name][loc.version]){
+            //--                 throw new Error(`Version ${loc.version} of package '${loc.name}' already exists`);
             //--             }
-            var _latest_version = this.latest_version(options.name);
-            if (options.upsert) {
-                if (_latest_version && semver.gt(_latest_version, options.version))
-                    throw new Error("Version (" + options.version + ") preceeds the latest version (" + _latest_version + ")");
-            }
-            else {
-                if (_latest_version && semver.gte(_latest_version, options.version))
-                    throw new Error("Version (" + options.version + ") does not exceed the latest version (" + _latest_version + ")");
+            var _latest_version = this.latest_version(loc.name);
+            if (!options.force) {
+                if (options.upsert) {
+                    if (_latest_version && semver.gt(_latest_version, loc.version))
+                        throw new Error("Version (" + loc.version + ") preceeds the latest version (" + _latest_version + ")");
+                }
+                else {
+                    if (_latest_version && semver.gte(_latest_version, loc.version))
+                        throw new Error("Version (" + loc.version + ") does not exceed the latest version (" + _latest_version + ")");
+                }
             }
         }
         else {
             // CREATE THE PACKAGE
-            this.store[options.name] = {};
+            this.store[loc.name] = {};
+            this.dependencies[loc.name] = {};
         }
         // the actual work
-        this.store[options.name][options.version] = pkg;
+        this.store[loc.name][loc.version] = options.value;
+        if (options.hasOwnProperty("depends"))
+            this.dependencies[loc.name][loc.version] = options.depends;
         return true;
     };
-    MemoryRepo.prototype.fetch = function (options) {
-        // validate the options
-        options = utils_1.validate_options_range(options);
-        // does the package exist?
-        if (!this.store.hasOwnProperty(options.name) || // is there a package container
-            !Object.keys(this.store[options.name]).length) {
-            throw new Error("No such package: " + options.name);
+    MemoryRepo.prototype.depends = function (x) {
+        if (Array.isArray(x)) {
+            var out = version_resolution_1.calculate_dependencies_sync(x, this);
+            return out;
         }
-        // get the version number (key)
-        if (options.version) {
-            var key = semver.maxSatisfying(Object.keys(this.store[options.name]), options.version);
-            if (!key)
-                throw new Error("No such version: " + options.version);
+        if (utils_1.isPackageLoc(x)) {
+            var out = version_resolution_1.calculate_dependencies_sync([x], this);
+            return out;
         }
         else {
-            key = this.latest_version(options.name);
+            var y = Object.keys(x)
+                .filter(function (y) { return x.hasOwnProperty(y); })
+                .map(function (y) { return { name: y, version: x[y] }; });
+            var out = version_resolution_1.calculate_dependencies_sync(y, this);
+            return out;
         }
-        return {
-            name: options.name,
-            version: key,
-            object: this.store[options.name][key],
-        };
     };
-    MemoryRepo.prototype.update = function (options, pkg) {
+    ;
+    MemoryRepo.prototype.fetch = function (query, fetch_opts) {
+        var _this = this;
+        if (Array.isArray(query)) {
+            var names_1 = query.map(function (x) { return x.name; });
+            return this.depends(query)
+                .filter(function (x) { return fetch_opts.dependencies || names_1.indexOf(x.name) != -1; })
+                .map(function (x) { return _this.fetchOne(x); });
+        }
+        else if (fetch_opts.dependencies) {
+            return this.depends([query]).map(function (x) { return _this.fetchOne(x); });
+        }
+        else {
+            return [this.fetchOne(query)];
+        }
+    };
+    MemoryRepo.prototype.fetchOne = function (query, fetch_opts) {
+        // validate the query
+        query = utils_1.validate_options_range(query);
+        // does the package exist?
+        if (!this.store.hasOwnProperty(query.name) || // is there a package container
+            !Object.keys(this.store[query.name]).length) {
+            throw new Error("No such package: " + query.name + "versions include: " + JSON.stringify(Object.keys(this.store)));
+        }
+        // get the version number (key)
+        if (query.version) {
+            var key = semver.maxSatisfying(Object.keys(this.store[query.name]), query.version);
+            if (!key)
+                throw new Error("No such version: " + query.version);
+        }
+        else {
+            key = this.latest_version(query.name);
+        }
+        var out = {
+            name: query.name,
+            version: key
+        };
+        if (!(fetch_opts && fetch_opts.novalue))
+            out.value = this.store[query.name][key];
+        if (this.dependencies.hasOwnProperty(query.name) &&
+            this.dependencies[query.name].hasOwnProperty(key)) {
+            out.depends = {};
+            var deps = this.dependencies[query.name][key];
+            for (var _i = 0, _a = Object.keys(deps); _i < _a.length; _i++) {
+                var key_1 = _a[_i];
+                if (deps.hasOwnProperty(key_1))
+                    out.depends[key_1] = deps[key_1];
+            }
+        }
+        return out;
+    };
+    MemoryRepo.prototype.update = function (options) {
         // validate the options
-        options = utils_1.validate_options(options);
-        var _latest_version = this.latest_version(options.name);
-        if (options.version &&
-            !semver.eq(options.version, _latest_version)) {
+        var loc = utils_1.validate_options(options);
+        var _latest_version = this.latest_version(loc.name);
+        if (loc.version &&
+            !semver.eq(loc.version, _latest_version)) {
             throw new Error("Only the most recent version of a package may be updated");
         }
         // the actual work
-        this.store[options.name][_latest_version] = pkg;
+        this.store[loc.name][_latest_version] = options.value;
+        if (options.hasOwnProperty("depends"))
+            this.dependencies[loc.name][_latest_version] = options.depends;
         return true;
     };
     MemoryRepo.prototype.del = function (options) {
         // validate the options
-        options = utils_1.validate_options(options);
-        if (!this.store.hasOwnProperty(options.name)) {
-            throw new Error("No such package: " + options.name);
+        var loc = utils_1.validate_options(options);
+        if (!this.store.hasOwnProperty(loc.name)) {
+            throw new Error("No such package: " + loc.name);
         }
-        if (!options.version) {
+        if (!loc.version) {
             throw new Error("Version parameter is required when deleting a package");
         }
-        if (!(this.store[options.name][options.version])) {
-            throw new Error("No such version: " + options.version);
+        if (!(this.store[loc.name][loc.version])) {
+            throw new Error("No such version: " + loc.version);
         }
         // the actual work
-        delete this.store[options.name][options.version];
+        delete this.store[loc.name][loc.version];
         return true;
     };
     MemoryRepo.prototype.exists = function (name) {
