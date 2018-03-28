@@ -75,22 +75,22 @@ var MemoryRepo = /** @class */ (function () {
         }
     };
     ;
-    MemoryRepo.prototype.fetch = function (query, fetch_opts) {
+    MemoryRepo.prototype.fetch = function (query, opts) {
         var _this = this;
         if (Array.isArray(query)) {
             var names_1 = query.map(function (x) { return x.name; });
             return this.depends(query)
-                .filter(function (x) { return fetch_opts.dependencies || names_1.indexOf(x.name) != -1; })
+                .filter(function (x) { return (opts && opts.dependencies) || names_1.indexOf(x.name) != -1; })
                 .map(function (x) { return _this.fetchOne(x); });
         }
-        else if (fetch_opts.dependencies) {
+        else if ((opts && opts.dependencies)) {
             return this.depends([query]).map(function (x) { return _this.fetchOne(x); });
         }
         else {
             return [this.fetchOne(query)];
         }
     };
-    MemoryRepo.prototype.fetchOne = function (query, fetch_opts) {
+    MemoryRepo.prototype.fetchOne = function (query, opts) {
         // validate the query
         query = utils_1.validate_options_range(query);
         // does the package exist?
@@ -111,7 +111,7 @@ var MemoryRepo = /** @class */ (function () {
             name: query.name,
             version: key
         };
-        if (!(fetch_opts && fetch_opts.novalue))
+        if (!(opts && opts.novalue))
             out.value = this.store[query.name][key];
         if (this.dependencies.hasOwnProperty(query.name) &&
             this.dependencies[query.name].hasOwnProperty(key)) {

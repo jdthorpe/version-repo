@@ -26,11 +26,11 @@ var ReadonlyBuffer = /** @class */ (function () {
             return this.depends(query, opts.cached)
                 .then(function (pkgs) {
                 return Promise.all(pkgs
-                    .filter(function (x) { return opts.dependencies || names_1.indexOf(x.name) != -1; })
+                    .filter(function (x) { return (opts && opts.dependencies) || names_1.indexOf(x.name) != -1; })
                     .map(function (pkg) { return _this.fetchOne(pkg, opts); }));
             });
         }
-        else if (opts.dependencies) {
+        else if (opts && opts.dependencies) {
             return this.depends([query], opts.cached)
                 .then(function (pkgs) {
                 return Promise.all(pkgs

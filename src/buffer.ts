@@ -44,11 +44,11 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
             return this.depends(query,opts.cached)
                     .then(pkgs => 
                             Promise.all(pkgs
-                                        .filter(x => opts.dependencies || names.indexOf(x.name) != -1)
+                                        .filter(x => (opts && opts.dependencies) || names.indexOf(x.name) != -1)
                                         .map(pkg => this.fetchOne(pkg,opts)))
                     )
 
-        }else if(opts.dependencies){
+        }else if(opts && opts.dependencies){
             return this.depends([query],opts.cached)
                     .then(pkgs => 
                             Promise.all(pkgs

@@ -67,7 +67,7 @@ export class dTransform<S,T>  implements deferred_repository<T> {
     }
 
     fetchOne(query,opts?:fetch_opts){
-        if((!!opts) && !!!opts.novalue){
+        if((!!opts) && !!opts.novalue){
             var out:Promise<resource_data<any>> = Promise.resolve(this.store.fetchOne(query,opts));
             return (<Promise<resource_data<T>>>out);
         }

@@ -61,7 +61,7 @@ var dTransform = /** @class */ (function () {
     };
     dTransform.prototype.fetchOne = function (query, opts) {
         var _this = this;
-        if ((!!opts) && !!!opts.novalue) {
+        if ((!!opts) && !!opts.novalue) {
             var out = Promise.resolve(this.store.fetchOne(query, opts));
             return out;
         }

@@ -91,14 +91,14 @@ export class MemoryRepo<T> implements sync_repository<T> {
         }
     };
 
-    fetch(query:package_loc | package_loc[],fetch_opts?:fetch_opts):resource_data<T>[]{
+    fetch(query:package_loc | package_loc[],opts?:fetch_opts):resource_data<T>[]{
 
         if(Array.isArray(query)){
             const names = query.map(x => x.name);
             return this.depends(query)
-                        .filter(x => fetch_opts.dependencies || names.indexOf(x.name) != -1)
+                        .filter(x => (opts && opts.dependencies) || names.indexOf(x.name) != -1)
                         .map(x => this.fetchOne(x));
-        }else if(fetch_opts.dependencies){
+        }else if((opts && opts.dependencies)){
             return this.depends([query]).map(x => this.fetchOne(x));
         }else{
             return [this.fetchOne(query)];
@@ -106,7 +106,7 @@ export class MemoryRepo<T> implements sync_repository<T> {
 
     }
 
-    fetchOne(query:package_loc ,fetch_opts?:fetch_opts):resource_data<T>{
+    fetchOne(query:package_loc ,opts?:fetch_opts):resource_data<T>{
 
         // validate the query
         query = validate_options_range(query);
@@ -132,7 +132,7 @@ export class MemoryRepo<T> implements sync_repository<T> {
                 version:key
             };
 
-        if(!(fetch_opts && fetch_opts.novalue))
+        if(!(opts && opts.novalue))
                 out.value = this.store[query.name][key];
         
         if(this.dependencies.hasOwnProperty(query.name) && 
