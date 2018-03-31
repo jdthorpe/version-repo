@@ -26,6 +26,7 @@
   "devDependencies": {
     "@types/bluebird": "^3.5.20",
     "@types/chai": "^4.1.2",
+    "@types/chai-as-promised": "^7.1.0",
     "@types/mocha": "^2.2.48",
     "@types/semver": "^5.5.0",
     "body-parser": "^1.15.2",

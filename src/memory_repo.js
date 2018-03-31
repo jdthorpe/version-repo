@@ -95,7 +95,7 @@ var MemoryRepo = /** @class */ (function () {
         query = utils_1.validate_options_range(query);
         // does the package exist?
         if (!this.store.hasOwnProperty(query.name) || // is there a package container
-            !Object.keys(this.store[query.name]).length) {
+            !Object.keys(this.store[query.name]).length) { // and are there any contents
             throw new Error("No such package: " + query.name + "versions include: " + JSON.stringify(Object.keys(this.store)));
         }
         // get the version number (key)

@@ -6,8 +6,6 @@ chai.should();
 var expect = chai.expect;
 
 import {MemoryRepo} from "../src/memory_repo";
-//-- var Que = require("q");
-//-- Que.longStackSupport = true;
 
 import { package_loc, deferred_readable_repository } from "../src/typings"
 
