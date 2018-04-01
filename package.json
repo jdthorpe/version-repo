@@ -29,17 +29,13 @@
     "@types/chai-as-promised": "^7.1.0",
     "@types/mocha": "^2.2.48",
     "@types/semver": "^5.5.0",
-    "body-parser": "^1.15.2",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "mocha": "^3.0.2",
-    "multer": "^1.2.0",
-    "object-sizeof": "^1.0.10",
     "temp": "^0.8.3"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
-    "express": "^4.16.2",
     "semver": "^5.5.0"
   }
 }
