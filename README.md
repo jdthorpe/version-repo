@@ -10,14 +10,15 @@ the right versions of other things.
 
 ### The Solution: 
 
-Version-Repos are typed repositories that store named objects, their version, and
-their requirements (dependencies). Version repo's take care of the logic of
-finding a complet and consistent set of objects for a given query.
+Version-repo's are typed repositories that store named values, their
+[version](https://semver.org/), and their requirements (dependencies). Version
+repo's take care of the logic of finding a complete and consistent set of
+resources for a given query.
 
-Furthermore, there are a variety of `version-repo`s which simplify the process
+Furthermore, there are a variety of version-repo's which simplify the process
 of storing your object on disk, in memory, or in a database; serving and
 querying them http/https, and perfomning tranformations when storing and/or
-fetching your objects (e.g. stringifying / parsing JSON objects stored on
+fetching your resources (e.g. stringifying / parsing JSON objects stored on
 disk).
 
 
@@ -25,9 +26,9 @@ disk).
 # API
 <!-- =============================================== -->
 
-#### Storing objects
+#### Storing resources
 
-Objects are stored using the `create()` method, like so:
+Resources are stored using the `create()` method, like so:
 
 ```javascript
 var R = require("version-repo");
@@ -38,9 +39,9 @@ repo.create({name:"A",version:"v1.1.5",value:"The best thing yet"});
 repo.create({name:"A",version:"2.0.0", value:"Something different"});
 ```
 
-#### Retrieving objects
+#### Retrieving resources
 
-Objects are queried using the `fetch()` method, which returna an array of mathing objects.  
+Resources are queried using the `fetch()` method, which return an array of matching resources.
 
 ```javascript
 repo.fetch({name:"A"});
@@ -196,7 +197,7 @@ A AsyncBuffer Repo keeps local copies of resources queried from another 'host'
 repository, which is particularly useful if the host repo is on another
 physical machine (e.g. for reducing the number of network requests of mobile
 apps).  Local resources are stored in memory and calls to
-create/update/delete methods are forwarde onto the host repository. 
+create/update/delete methods are forwarded onto the host repository. 
 
 ```typescript
 import { MemoryRepo, Buffer } from "version-repo"
@@ -283,8 +284,8 @@ new require("version-repo").Transformer(repo,storify,destorify)
 ```
 ##### Constructor parameters
 - repo: A version-repo instance of type `S`.
-- storify: A function used to transform objects on storage on create / update. (`funciton(x:T):S`)
-- destorify: A function used to transform objects from storage on fetch. (`funciton(x:T):S`)
+- storify: A function used to transform objects as they are stored (`create()`ed) or updated. 
+- destorify: A function used to transform stored objects when they are retrieved (`fetch()`ed). 
 
 <!-- 
  ===============================================
@@ -328,7 +329,7 @@ const my_string_repo = new MemoryRepo<string>()
 ```
 
 
-and synchronous and deferred transform repos accept two type parameters which
+and synchronous and deferred transform repositories accept two type parameters which
 specify the type of the underlying repo, and the type for the API it exposes.
 In this example, a FileRepo is used to store serialized objects on disk, and 
 an deferred transform repo is used to manage the serialization / de-serialization:
@@ -403,7 +404,7 @@ interface sync_repository<T> {
     latest_version(name:string):string
 
 }
-'''
+```
 
 
 ## Asynchronous API
@@ -419,7 +420,7 @@ Note that these examples also demonstrate
 [version-repo-node](https://www.npmjs.com/package/version-repo-node) and make
 use of [temp](https://www.npmjs.com/package/temp)
 
-```JavaScript
+```javascript
 // Create an in-memory versioned repository
 var repo = require('versioned-repo'),
 	my_mem_repo= repo.memory(),
@@ -517,5 +518,7 @@ my_file_repo.creae({name:"my-resource",version:"1.2.3"},
 	console.log(dependents);  // eventually logs: [ { name: 'my-resource', version: '1.2.3' } ]	
 
 })
+
+```
 
 
