@@ -2,13 +2,13 @@ A suite of repositories with [semantic
 versioning](https://www.npmjs.com/package/semver) of objects and their
 dependencies.  **Think Bower, but for anything, not just JS code**
 
-## The Problem:
+### The Problem:
 
 You've got lots of things (code, data, whatever), and you've got multiple
 versions of your things.  Furthermore your things only work when paired with
 the right versions of other things.
 
-#### The Solution: 
+### The Solution: 
 
 Version-Repos are typed repositories that store named objects, their version, and
 their requirements (dependencies). Version repo's take care of the logic of
@@ -21,9 +21,9 @@ fetching your objects (e.g. stringifying / parsing JSON objects stored on
 disk).
 
 
-------------------------------------------------------------
-
+<!-- =============================================== -->
 # API
+<!-- =============================================== -->
 
 #### Storing objects
 
@@ -164,13 +164,11 @@ However by default you may only update the latest version of the resource,
 which can be changed by setting `delete:"any"` or `delete:"none"` when
 instantiating the repo. 
 
-------------------------------------------------------------
 
+<!-- =============================================== -->
 # Repositories Classes
+<!-- =============================================== -->
 
-<!-- 
- ===============================================
--->
 ### MemoryRepo *(API: Synchronous, Stored Types: Any)*
 
 A synchronous repository which keeps resources in memory.
@@ -316,9 +314,11 @@ Note that the host repo may have a synchronous API, and the storify and/or
 de-storify functions may return transformed values or Promised for the
 transformed values.
 
-
-------------------------------------------------------------
+<!-- =============================================== -->
+<!-- =============================================== -->
 # Working with TypeScript
+<!-- =============================================== -->
+<!-- =============================================== -->
 
 Every repo's that can potentially store any type of object accept a type parameter:
 
