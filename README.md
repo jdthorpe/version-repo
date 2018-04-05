@@ -26,7 +26,7 @@ disk).
 # API
 <!-- =============================================== -->
 
-#### Storing resources
+## Storing resources
 
 Resources are stored using the `create()` method, like so:
 
@@ -39,7 +39,7 @@ repo.create({name:"A",version:"v1.1.5",value:"The best thing yet"});
 repo.create({name:"A",version:"2.0.0", value:"Something different"});
 ```
 
-#### Retrieving resources
+## Retrieving resources
 
 Resources are queried using the `fetch()` method, which return an array of matching resources.
 
@@ -78,7 +78,7 @@ repo.fetch({"A":"~1"}).value    // "The best thing yet"
 repo.fetch({"A":"1.1.3 - 1.1.7 || >=2.5.0"}).value // "The best thing yet"
 ```
 
-### Fetching Multiple Resources: 
+## Fetching Multiple Resources: 
 
 So far we've stored several vesions of a single resource, but the real purpose
 of the version repo's is to manage multiple resources and their versions. For
@@ -139,7 +139,7 @@ repo.fetch([{"B":"1.1.1"},{"A":"2.0.0"}])
 repo.fetch([{"C":"1.1.3"}])
 ```
 
-### Updating Resources: 
+## Updating Resources: 
 
 A resource either can be updated using either `update()` method or the
 `insert()` method with the option `upsert:true`:
@@ -153,7 +153,7 @@ However by default you may only update the latest version of the resource,
 which can be changed by setting `update:"any"` or `update:"none"` when
 instantiating the repo. 
 
-### Deleting Resources: 
+## Deleting Resources: 
 
 A resource can be deleted using the `del()` method:
 
@@ -170,106 +170,53 @@ instantiating the repo.
 # Repositories Classes
 <!-- =============================================== -->
 
-### MemoryRepo *(API: Synchronous, Stored Types: Any)*
+## MemoryRepo *(API: Synchronous, Stored Types: Any)*
 
 A synchronous repository which keeps resources in memory.
 
 ##### Constructor parameters
 
-- config:  {
-		update: "latest" (default) | "any" | "none";
-		delete: "latest" (default) | "any" | "none";
-	}
+- config:  An object with the following attributes: 
+	- update: (optional) one of "latest" (default), "any", "none"
+	- delete: (optional) one of "latest" (default), "any", "none"
 
+##### Example :
 
-<!-- 
- ===============================================
--->
-### AsyncMemoryRepo *(API: Asynchronous, Stored Types: Any)*
-
-An asynchronous repository which keeps resources in memory.
-
-##### Constructor parameters
-
-None
+```javascript
+var my_repo = new MemoryRepo()
+```
 
 <!-- 
  ===============================================
 -->
-### Buffer *(API: Async, Stored Types: Any)*
+## ReadonlyBuffer *(API: Async, Stored Types: Any)*
 
-A Buffer repository is a read-only wrapper which keeps local copies of
+A ReadOnly Buffer repository is a read-only wrapper which keeps local copies of
 resources queried from another 'host' repository.  This is particularly useful
 if the host repo is on another physical machine, for example to reduce the number
 of network requests of mobile apps.  Local resources are stored in memory and
 calls to create/update/delete methods are forwarded onto the host repository. 
 
-```typescript
-import { MemoryRepo, Buffer } from "version-repo"
-host_repo = new MemoryRepo()
-my_repo =new Buffer(host_repo)
-```
 
 ##### Constructor parameters
+
 - repo: A version-repo instance
 
+##### Example :
 
-<!-- 
- ===============================================
--->
-### RemoteRepo
-
-An asynchronous repository which forwards all requests to another
-version-repository over http.  (The **`RouterRepo`** class available in the
-[version-repo-node](https://www.npmjs.com/package/version-repo-node) wraps
-another repository with an HTTP interface).
-
-```
-new require("version-repo").Transformer(url)
-```
-##### Constructor parameters
-
-One of: 
- 
-- (Most common) An object with a complete `base_url` attribute (e.g.  `{ 'base_url':"http://my.repo.com:1234/my-stuff", }`)
-
-- (typically used for testing) an object with an Express App instance serving a repo router and the relative
-path, such as: 
-
-```typescript
-import { MemoryRepo, RemoteRepo, router } from "version-repo"
-import express = require('express');
-
-var app = express(), 
-	host_repo  = new MemoryRepo();
-	app.use('/my-stuff', repo.router({ repository:parser_repo, }));
-
-my_repo =new RemoteRepo({ app: app, base_url: "/my-stuff" })
+```javascript
+var host_repo = new MemoryRepo()
+var my_readonly_repo =new ReadonlyBuffer(host_repo)
 ```
 
-- (typically used for testing) an object with a server instance serving a repo router and the relative
-path, such as: 
-
-```typescript
-import { MemoryRepo, RemoteRepo, router } from "version-repo"
-import express = require('express');
-import http = require('http');
-
-var app = express(), 
-	host_repo  = new MemoryRepo();
-app.use('/my-stuff', repo.router({ repository:parser_repo, }));
-var server = http.createServer(app)
-
-my_repo =new RemoteRepo({ app: server, base_url: "/my-stuff" })
-```
 
 <!-- 
  ===============================================
 -->
 
-### Transformer
+## sTransform *(API: Synchronous, Stored Types: Any)*
 
-A repo which forwards all requests to another version repo and performs
+A *Synchronous* repo which forwards all requests to another version repo and performs
 transformations of the stored values on create / update (storifying) and fetch
 (de-storifying). 
 
@@ -283,36 +230,48 @@ values.  Transformers could also provide validate-on-save logic by using an
 object validator such as the awesome AJV library as a storify, and trivial
 function for destorifying (e.g. `function(x){return x;}`)
 
-```typescript
-import { sTransform } from "version-repo"
-new Transformer<S,T>(repo,storify,destorify)
-new require("version-repo").Transformer(repo,storify,destorify)
-```
 ##### Constructor parameters
+
 - repo: A version-repo instance of type `S`.
 - storify: A function used to transform objects as they are stored (`create()`ed) or updated. 
 - destorify: A function used to transform stored objects when they are retrieved (`fetch()`ed). 
 
+##### Example :
+
+```javascript
+var host_repo = new MemoryRepo()
+var my_repo = new sTransform(host_repo,JSON.stringify,JSON.parse)
+```
+
+the same examlple in TypeScript:
+
+```javascript
+var host_repo = new MemoryRepo<string>()
+var my_repo = new sTransform<string,any>(host_repo,JSON.stringify,JSON.parse)
+```
+
+
 <!-- 
  ===============================================
 -->
-### Defered (Async) Transformer
 
-An asynchronous repo which forwards all requests to another version repo and
+### dTransform  *(API: Synchronous, Stored Types: Any)*
+
+An asynchronous (i.e. *Deffered*) repo which forwards all requests to another version repo and
 performs transformations of the objects in transit. 
 
-This is particularly useful for wrapping string-only repositories (i.e.
-`FileRepo` in the
-[version-repo-node](https://www.npmjs.com/package/version-repo-node) package)
-by providing parse-on-read and stringify-on-write logic.
+This is particularly useful for wrapping asynchronous repo's with limited storage types, 
+such as the File and Remote (HTTP/S) Repo's in
+[version-repo-node](https://www.npmjs.com/package/version-repo-node)) 
 
-```typescript
+```TypeScript
 import { dTransform } from "version-repo"
 new Transformer<S,T>(repo,storify,destorify)
 new require("version-repo").Transformer(repo,storify,destorify)
 ```
 
 ##### Constructor parameters
+
 - repo: A version-repo instance of type `S`.
 - storify: A function used to transform objects on storage on create / update. (`funciton(x:T):S`)
 - destorify: A function used to transform objects from storage on fetch. (`funciton(x:T):S`)
@@ -320,6 +279,24 @@ new require("version-repo").Transformer(repo,storify,destorify)
 Note that the host repo may have a synchronous API, and the storify and/or
 de-storify functions may return transformed values or Promised for the
 transformed values.
+
+##### Examples:
+
+```javascript
+var string_only_repo = new MemoryRepo()
+var my_async_repo = new sTransform(string_only_repo,JSON.stringify,JSON.parse)
+```
+
+the same examlple in TypeScript:
+
+```TypeScript
+var string_only_repo = new MemoryRepo<string>()
+var my_async_repo = new sTransform<string,any>(string_only_repo,JSON.stringify,JSON.parse)
+```
+
+
+
+
 
 <!-- =============================================== -->
 <!-- =============================================== -->
