@@ -1,5 +1,5 @@
 
-import { package_loc, resource_data, sync_repository,fetch_opts } from   "./typings";
+import { package_loc, resource_data, sync_repository,fetch_opts, ConfigOptions } from   "./typings";
 import {validate_options,validate_options_range, isPackageLoc} from './utils';
 import * as semver from 'semver';
 import { calculate_dependencies_sync } from './version_resolution';
@@ -12,7 +12,7 @@ export class MemoryRepo<T> implements sync_repository<T> {
     store:{ [x:string]:{ [x:string]:T } };
     dependencies:{ [x:string]:{ [x:string]:{ [x:string]:string } } };
 
-    constructor(private options:{single_version?:boolean} = {}){
+    constructor(private config:ConfigOptions = {}){
         this.store = {};
         this.dependencies = {};
     }
@@ -30,10 +30,6 @@ export class MemoryRepo<T> implements sync_repository<T> {
     // CRUD
     // ------------------------------
     create(options:resource_data<T>){
-
-        if(this.options.single_version && this.store.hasOwnProperty(options.name)){
-            throw new Error(`Duplicate definition of library (${options.name}) in single version repository.`);
-        }
 
         // validate the options
         const loc = validate_options(options);
@@ -150,18 +146,25 @@ export class MemoryRepo<T> implements sync_repository<T> {
 
     update(options:resource_data<T>){
 
-        // validate the options
         const loc = validate_options(options);
-        var _latest_version:string = this.latest_version(loc.name);
-        if(loc.version && 
-                !semver.eq(loc.version,_latest_version)){
-            throw new Error("Only the most recent version of a package may be updated");
-        }
+        if(this.config.update === undefined || this.config.update == "latest"){
+            // validate the options
+            var _latest_version:string = this.latest_version(loc.name);
+            if(loc.version && !semver.eq(loc.version,_latest_version)){
+                throw new Error("Only the most recent version of a package may be updated");
+            }
+        }else if(this.config.update == "none"){
+            throw new Error("updates are disableed in this repository");
+        }// else{ pass }
+
 
         // the actual work
         this.store[loc.name][_latest_version] = options.value;
-        if(options.hasOwnProperty("depends"))
+        if(options.depends === undefined){
+            delete this.dependencies[loc.name][_latest_version];
+        }else{
             this.dependencies[loc.name][_latest_version] = options.depends;
+        }
 
         return true;
     }
@@ -180,6 +183,18 @@ export class MemoryRepo<T> implements sync_repository<T> {
         if( !(this.store[loc.name][loc.version])){
             throw new Error("No such version: "+loc.version);
         }
+
+
+
+        if(this.config.update === undefined || this.config.delete == "latest"){
+            // validate the options
+            var _latest_version:string = this.latest_version(loc.name);
+            if(loc.version && !semver.eq(loc.version,_latest_version)){
+                throw new Error("Only the most recent version of a package may be deleted");
+            }
+        }else if(this.config.update == "none"){
+            throw new Error("Deletions are disableed in this repository");
+        }// else{ pass }
 
         // the actual work
         delete this.store[loc.name][loc.version];

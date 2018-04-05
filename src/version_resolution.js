@@ -29,15 +29,22 @@ x, repo) {
     function __resolve__() {
         if (dependencies.length === 0) {
             // We're done! (whew, that was easy).
-            return Promise.resolve(
-            //formerly: MRO.run().slice(1).map( (name: string) => {
-            MRO.run().map(function (name) {
-                console.log(JSON.stringify({ name: name, version: VERSIONS[name] }, null, 4));
-                return {
-                    name: name,
-                    version: VERSIONS[name]
-                };
-            }));
+            return new Promise(function (resolve, reject) {
+                try {
+                    //formerly: MRO.run().map( (name: string) => {
+                    var out = MRO.run().slice(1).map(function (name) {
+                        console.log(JSON.stringify({ name: name, version: VERSIONS[name] }, null, 4));
+                        return {
+                            name: name,
+                            version: VERSIONS[name]
+                        };
+                    });
+                    resolve(out);
+                }
+                catch (err) {
+                    reject(err);
+                }
+            });
         }
         else {
             // acuquire the next dependenciy

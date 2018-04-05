@@ -161,7 +161,7 @@ A resource can be deleted using the `del()` method:
 repo.del({name:'A',version:'2.0.0'})
 ```
 
-However by default you may only update the latest version of the resource,
+However by default you may only delete the latest version of the resource,
 which can be changed by setting `delete:"any"` or `delete:"none"` when
 instantiating the repo. 
 
@@ -175,7 +175,11 @@ instantiating the repo.
 A synchronous repository which keeps resources in memory.
 
 ##### Constructor parameters
-None
+
+- config:  {
+		update: "latest" (default) | "any" | "none";
+		delete: "latest" (default) | "any" | "none";
+	}
 
 
 <!-- 
@@ -186,6 +190,7 @@ None
 An asynchronous repository which keeps resources in memory.
 
 ##### Constructor parameters
+
 None
 
 <!-- 
@@ -193,11 +198,11 @@ None
 -->
 ### Buffer *(API: Async, Stored Types: Any)*
 
-A AsyncBuffer Repo keeps local copies of resources queried from another 'host'
-repository, which is particularly useful if the host repo is on another
-physical machine (e.g. for reducing the number of network requests of mobile
-apps).  Local resources are stored in memory and calls to
-create/update/delete methods are forwarded onto the host repository. 
+A Buffer repository is a read-only wrapper which keeps local copies of
+resources queried from another 'host' repository.  This is particularly useful
+if the host repo is on another physical machine, for example to reduce the number
+of network requests of mobile apps.  Local resources are stored in memory and
+calls to create/update/delete methods are forwarded onto the host repository. 
 
 ```typescript
 import { MemoryRepo, Buffer } from "version-repo"
@@ -205,6 +210,7 @@ host_repo = new MemoryRepo()
 my_repo =new Buffer(host_repo)
 ```
 
+##### Constructor parameters
 - repo: A version-repo instance
 
 
@@ -336,13 +342,13 @@ an deferred transform repo is used to manage the serialization / de-serializatio
 
 ```typescript
                 repo: new repo.sTransform(new repo.MemoryRepo(), (x => x), (x => x))});
-import { sTransform } from "version-repo-node"
+import { sTransform } from "version-repo"
 import { FileRepo } from "version-repo-node"
-const my_file_repo = new FileRepo<string>({directory:"/some/place/nice")})
+const my_file_repo = new FileRepo({directory:"/some/place/nice")}) // a string only repo.
 const my_object_store = new sTransform<string,any>( my_file_repo JSON.stringify, JSON.parse);  
 ```
 
-Some repo's only accept string values including the FileRepo, Express Router, and RemoteRepo
+Some repo's can store only a limited set of values, eg. the FileRepo can only accept sting values.
 
 # General API
 

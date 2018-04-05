@@ -4,9 +4,9 @@ var utils_1 = require("./utils");
 var semver = require("semver");
 var version_resolution_1 = require("./version_resolution");
 var MemoryRepo = /** @class */ (function () {
-    function MemoryRepo(options) {
-        if (options === void 0) { options = {}; }
-        this.options = options;
+    function MemoryRepo(config) {
+        if (config === void 0) { config = {}; }
+        this.config = config;
         this.store = {};
         this.dependencies = {};
     }
@@ -21,9 +21,6 @@ var MemoryRepo = /** @class */ (function () {
     // CRUD
     // ------------------------------
     MemoryRepo.prototype.create = function (options) {
-        if (this.options.single_version && this.store.hasOwnProperty(options.name)) {
-            throw new Error("Duplicate definition of library (" + options.name + ") in single version repository.");
-        }
         // validate the options
         var loc = utils_1.validate_options(options);
         if (!loc.version) {
@@ -126,17 +123,25 @@ var MemoryRepo = /** @class */ (function () {
         return out;
     };
     MemoryRepo.prototype.update = function (options) {
-        // validate the options
         var loc = utils_1.validate_options(options);
-        var _latest_version = this.latest_version(loc.name);
-        if (loc.version &&
-            !semver.eq(loc.version, _latest_version)) {
-            throw new Error("Only the most recent version of a package may be updated");
+        if (this.config.update === undefined || this.config.update == "latest") {
+            // validate the options
+            var _latest_version = this.latest_version(loc.name);
+            if (loc.version && !semver.eq(loc.version, _latest_version)) {
+                throw new Error("Only the most recent version of a package may be updated");
+            }
         }
+        else if (this.config.update == "none") {
+            throw new Error("updates are disableed in this repository");
+        } // else{ pass }
         // the actual work
         this.store[loc.name][_latest_version] = options.value;
-        if (options.hasOwnProperty("depends"))
+        if (options.depends === undefined) {
+            delete this.dependencies[loc.name][_latest_version];
+        }
+        else {
             this.dependencies[loc.name][_latest_version] = options.depends;
+        }
         return true;
     };
     MemoryRepo.prototype.del = function (options) {
@@ -151,6 +156,16 @@ var MemoryRepo = /** @class */ (function () {
         if (!(this.store[loc.name][loc.version])) {
             throw new Error("No such version: " + loc.version);
         }
+        if (this.config.update === undefined || this.config.delete == "latest") {
+            // validate the options
+            var _latest_version = this.latest_version(loc.name);
+            if (loc.version && !semver.eq(loc.version, _latest_version)) {
+                throw new Error("Only the most recent version of a package may be deleted");
+            }
+        }
+        else if (this.config.update == "none") {
+            throw new Error("Deletions are disableed in this repository");
+        } // else{ pass }
         // the actual work
         delete this.store[loc.name][loc.version];
         return true;

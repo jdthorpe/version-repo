@@ -1,6 +1,16 @@
 
 import * as Promise from "bluebird"
 
+export interface ConfigOptions {
+    update?:"latest"|"any"|"none";
+    delete?:"latest"|"any"|"none";
+}
+
+export interface file_repo_config extends ConfigOptions{ 
+    directory:string;
+    ext?:string;  
+}
+
 // borrowed from node.d.ts "url" module
 export interface Url {
     href?: string;
@@ -15,11 +25,6 @@ export interface Url {
     slashes?: boolean;
     hash?: string;
     path?: string;
-}
-
-export interface file_repo_config { 
-    directory:string;
-    ext?:string;  
 }
 
 export interface remote_repo_config { 
@@ -64,6 +69,7 @@ export interface ReadonlyBuffer<T> extends deferred_repository<T>{
     fetch_sync(options:package_loc):resource_data<T>;
 
 }
+
 
 export interface bare_deferred_readable_repository {
     fetchOne(x:package_loc,opts?:fetch_opts):Promise<resource_data<any>>;

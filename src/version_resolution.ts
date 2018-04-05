@@ -1,5 +1,5 @@
 
-import { package_loc, resource_data, bare_deferred_readable_repository,readable_repository, sync_readable_repository } from   "./typings";
+import { package_loc, bare_deferred_readable_repository, sync_readable_repository } from   "./typings";
 import { maxSatisfying, satisfies } from 'semver';
 
 import { is_package_loc } from "./utils"
@@ -8,7 +8,7 @@ import { is_package_loc } from "./utils"
 import * as Promise from 'bluebird';
 import c3 from "./c3"
 
-// Stragegy: 
+// Strategy: 
 // Resolve versions immediately; don't be cute about trying to winnow down 
 // the versions gradually to allow for greater chance of successfully
 // identifying a 'valid' set of requirments; keep track of requirements
@@ -56,16 +56,23 @@ export function calculate_dependencies  (
         if(dependencies.length === 0){
 
             // We're done! (whew, that was easy).
-            return Promise.resolve(
-                //formerly: MRO.run().slice(1).map( (name: string) => {
-                MRO.run().map( (name: string) => {
+            return new Promise((resolve,reject)=>{
 
-                    console.log(JSON.stringify({ name:name, version:VERSIONS[name] },null,4))
-                    return {
-                        name:name, 
-                        version:VERSIONS[name]
-                    }
-                }))
+                try{
+                    //formerly: MRO.run().map( (name: string) => {
+                    const out = MRO.run().slice(1).map( (name: string) => {
+                        console.log(JSON.stringify({ name:name, version:VERSIONS[name] },null,4))
+                        return {
+                            name:name, 
+                            version:VERSIONS[name]
+                        }
+                    })
+                    resolve(out);
+                }catch(err){
+                    reject(err);
+                }
+
+            })
 
         }else{
 
