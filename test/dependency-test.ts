@@ -1,4 +1,4 @@
-import { generate_backend_tests } from "./backend-test-fixture"
+import { generate_version_resolution_tests } from "./version-resolution-test-fixture"
 import chai = require("chai");
 import chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
@@ -16,7 +16,7 @@ import repo = require('../index');
 //--------------------------------------------------
 // just making sure teh fixture works as expected
 //--------------------------------------------------
-generate_backend_tests({
+generate_version_resolution_tests({
     name: "Memory Repo", 
     repo: new repo.MemoryRepo()
 });
@@ -26,11 +26,11 @@ generate_backend_tests({
 //--------------------------------------------------
 // backends populated via the fronend
 //--------------------------------------------------
-generate_backend_tests({
+generate_version_resolution_tests({
     name: "Memory Repo with trivial transform", 
     repo: new repo.sTransform(new repo.MemoryRepo(), (x => x), (x => x))
 });
-generate_backend_tests({
+generate_version_resolution_tests({
     name: "Memory Repo with trivial async-transform", 
     repo: new repo.dTransform(new repo.MemoryRepo(), (x => x), (x => x))
 });
@@ -44,7 +44,7 @@ generate_backend_tests({
 
     const _backend = new repo.MemoryRepo();
 
-    generate_backend_tests({
+    generate_version_resolution_tests({
         name: "Memory Repo with trivial async-transform", 
         backend: _backend,
         repo: new repo.dTransform(_backend, (x => x), (x => x))
@@ -57,7 +57,7 @@ generate_backend_tests({
 
     const _backend = new repo.MemoryRepo();
 
-    generate_backend_tests({
+    generate_version_resolution_tests({
         name: "Memory Repo with trivial async-transform and buffer", 
         backend: _backend,
         repo: new repo.ReadonlyBuffer(new repo.dTransform(_backend, (x => x), (x => x)))

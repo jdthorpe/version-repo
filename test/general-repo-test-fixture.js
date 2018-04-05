@@ -3,19 +3,14 @@
 //TODO: tests verifying that dependencies are updated and/or deleted with updates / upserts / deletes
 //TODO: tests verifying only the latest version can be deleted / updated
 //TODO: tests for repo.create(... , {upsert:true}) << future feature >> 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var chai = require("chai");
 var Promise = require("bluebird");
 var should = chai.should(), expect = chai.expect;
 function generate_tests(inst) {
-    describe(inst.name, function () {
-        console.log("is there a before method?");
-        if (inst.before !== undefined) {
-            before(function (done) {
-                console.log("calling before");
-                inst.before(done);
-            });
-        }
+    describe("<General Tests> " + inst.name, function () {
+        if (inst.before !== undefined)
+            before(inst.before);
         if (inst.after !== undefined)
             after(inst.after);
         if (inst.beforeEach !== undefined)
@@ -24,7 +19,7 @@ function generate_tests(inst) {
             afterEach(inst.afterEach);
         it('GET / (`packages()`) should return an empty list', function () {
             return Promise.resolve(inst.repo.packages())
-                .should.eventually.be["instanceof"](Array).and.have.property('length', 0);
+                .should.eventually.be.instanceof(Array).and.have.property('length', 0);
         });
         it('POST(create) should require a version', function () {
             var request;
@@ -49,7 +44,7 @@ function generate_tests(inst) {
             // FOR TESTING THE READ ONLY BUFFER
             return Promise.resolve(inst.repo.versions('bar')).then(function (x) {
                 (typeof x).should.equal('object');
-                expect(Array.isArray(x)).to.be["true"];
+                expect(Array.isArray(x)).to.be.true;
                 expect(x.indexOf("1.1.1")).to.not.equal(-1);
                 expect(x.length).to.equal(1);
             });
@@ -58,8 +53,8 @@ function generate_tests(inst) {
             // FOR TESTING THE READ ONLY BUFFER
             return Promise.resolve(inst.repo.versions()).then(function (x) {
                 (typeof x).should.equal('object');
-                expect(Array.isArray(x)).to.be["false"];
-                expect(x.hasOwnProperty('foo')).to.be["true"];
+                expect(Array.isArray(x)).to.be.false;
+                expect(x.hasOwnProperty('foo')).to.be.true;
                 x.foo.should.deep.equal(['1.1.1']);
             });
         });
@@ -151,7 +146,7 @@ function generate_tests(inst) {
         });
         it('GET "/" (`packages()`) should return the list of libraries', function () {
             return Promise.resolve(inst.repo.packages()).then(function (x) { return x.sort(); })
-                .should.eventually.be["instanceof"](Array).and.deep.equal(['foo', 'bar'].sort());
+                .should.eventually.be.instanceof(Array).and.deep.equal(['foo', 'bar'].sort());
         });
         it('DELETE /foo should require a version.', function () {
             var request;
@@ -165,12 +160,13 @@ function generate_tests(inst) {
         });
         it('DELETE /foo not fail', function () {
             return Promise.resolve(inst.repo.del({ name: 'foo', version: '1.1.1' }))
-                .should.eventually.to.be["true"];
+                .should.eventually.to.be.true;
         });
         it('GET "/" (`packages()`) should return the list of libraries', function () {
             return Promise.resolve(inst.repo.packages())
-                .should.eventually.be["instanceof"](Array).and.deep.equal(['bar']);
+                .should.eventually.be.instanceof(Array).and.deep.equal(['bar']);
         });
     });
 }
 exports.generate_tests = generate_tests;
+//# sourceMappingURL=general-repo-test-fixture.js.map

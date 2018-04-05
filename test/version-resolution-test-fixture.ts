@@ -6,7 +6,6 @@
 
 
 import chai = require('chai');
-import temp = require('temp');
 import * as Promise from "bluebird"
 const should = chai.should(),
       expect = chai.expect;
@@ -24,9 +23,9 @@ export interface backend_test_instance {
     afterEach?: (done?:() => void) => void|Promise<any>;
 }
 
-export function generate_backend_tests(test:backend_test_instance):void{
+export function generate_version_resolution_tests(test:backend_test_instance):void{
 
-    describe("< Repo.depends > " + test.name, function(){
+    describe("<Repo.depends()> " + test.name, function(){
 
         before(() => {
 
@@ -166,41 +165,41 @@ export function generate_backend_tests(test:backend_test_instance):void{
 
         describe("Fetch multiple version",function(){
 
-            it("should handle single packages with *no* dependencies.",function() {
+            it("should handle single packages with *no* dependencies (1).",function() {
                 return Promise.resolve(test.repo.fetch([{name:"a",version:"1.1.2"}],{dependencies:true}))
                         .then(x => x.map(y => {return {name:y.name,version:y.version,value:y.value};}))
                         .should.eventually.deep.equal([{name:"a",version:"1.1.2",value:"1.1.2"}]);
             });
-            it("should handle single packages with *no* dependencies.",function() {
+            it("should handle single packages with *no* dependencies. (2)",function() {
                 return Promise.resolve(test.repo.fetch([{name:"a",version:"~1.1.1"}],{dependencies:true}))
                         .then(x => x.map(y => {return {name:y.name,version:y.version,value:y.value};}))
                         .should.eventually.deep.equal([{name:"a",version:"1.1.3",value:"1.1.3"}]);
             });
-            it("should handle single packages with *no* dependencies.",function() {
+            it("should handle single packages with *no* dependencies. (3)",function() {
                 Promise.resolve(test.repo.fetch([{name:"a",version:"~1.x"}],{dependencies:true}))
                         .then(x => x.map(y => {return {name:y.name,version:y.version,value:y.value};}))
                         .should.eventually.deep.equal([{name:"a",version:"1.2.3",value:"1.2.3"}]);
             });
 
-            it("should handle single packages with dependencies.",function() {
+            it("should handle single packages with dependencies. (4)",function() {
                 return Promise.resolve(test.repo.fetch([{name:"b",version:"1.0.0"}],{dependencies:true}))
                         .then(x => x.map(y => {return {name:y.name,version:y.version,value:y.value};}))
                         .should.eventually.deep.equal([{name:"b",version:"1.0.0",value:"1.0.0"},
                                                        {name:"a",version:"1.0.0",value:"1.0.0"}]);
             });
-            it("should handle single packages with dependencies.",function() {
+            it("should handle single packages with dependencies. (5)",function() {
                 return Promise.resolve(test.repo.fetch([{name:"b",version:"1.1.1"}],{dependencies:true}))
                         .then(x => x.map(y => {return {name:y.name,version:y.version,value:y.value};}))
                         .should.eventually.deep.equal([{name:"b",version:"1.1.1",value:"1.1.1"},
                                                        {name:"a",version:"1.1.3",value:"1.1.3"}]);
             });
-            it("should handle single packages with dependencies.",function() {
+            it("should handle single packages with dependencies. (6)",function() {
                 return Promise.resolve(test.repo.fetch([{name:"b",version:"1.1.3"}],{dependencies:true}))
                         .then(x => x.map(y => {return {name:y.name,version:y.version,value:y.value};}))
                         .should.eventually.deep.equal([{name:"b",version:"1.1.3",value:"1.1.3"},
                                                        {name:"a",version:"1.1.2",value:"1.1.2"}]);
             });
-            it("should handle single packages with dependencies.",function() {
+            it("should handle single packages with dependencies. (7)",function() {
                 return Promise.resolve(test.repo.fetch([{name:"b",version:"1.1.4"}],{dependencies:true}))
                         .then(x => x.map(y => {return {name:y.name,version:y.version,value:y.value};}))
                         .should.eventually.deep.equal([{name:"b",version:"1.1.4",value:"1.1.4"},

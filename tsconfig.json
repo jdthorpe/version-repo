@@ -7,8 +7,8 @@
 	   	"lib": ["es2016","dom"]
     },
 	"include":[
+		"test/",
 		"src/",
-		"typings/index.d.ts",
 		"index.ts"
 	],
     "exclude": [

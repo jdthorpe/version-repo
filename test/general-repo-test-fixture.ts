@@ -6,7 +6,6 @@
 
 
 import chai = require('chai');
-import temp = require('temp');
 import * as Promise from "bluebird"
 const should = chai.should(),
       expect = chai.expect;
@@ -16,24 +15,17 @@ import {   sync_repository, deferred_repository, resource_data, repository } fro
 export interface test_instance {
     name:string;
     repo:repository<any>;
-    before?: (done?:() => void) => void|Promise<any>;
-    after?: (done?:() => void) => void|Promise<any>;
-    beforeEach?: (done?:() => void) => void|Promise<any>;
-    afterEach?: (done?:() => void) => void|Promise<any>;
+    before?: ((done?:() => void) => void)|(() => Promise<any>);
+    after?: ((done?:() => void) => void)|(() => Promise<any>);
+    beforeEach?: ((done?:() => void) => void)|(() => Promise<any>);
+    afterEach?: ((done?:() => void) => void)|(() => Promise<any>);
 }
 
 export function generate_tests(inst:test_instance):void{
 
-    describe(inst.name, function() {
+    describe("<General Tests> " + inst.name, function() {
 
-        console.log("is there a before method?")
-        if(inst.before!== undefined) {
-            before(function(done){
-                console.log("calling before")
-                inst.before(done);
-            })
-        }
-
+        if(inst.before!== undefined) before(inst.before)
         if(inst.after!== undefined) after(inst.after)
         if(inst.beforeEach!== undefined) beforeEach(inst.beforeEach)
         if(inst.afterEach!== undefined) afterEach(inst.afterEach)
