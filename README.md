@@ -281,7 +281,7 @@ var string_only_repo = new MemoryRepo()
 var my_async_repo = new dTransform(string_only_repo,JSON.stringify,JSON.parse)
 ```
 
-the same examlple in TypeScript with generic typing:
+the same examlple in TypeScript with generic types:
 
 ```TypeScript
 var string_only_repo = new MemoryRepo<string>()
@@ -321,14 +321,14 @@ const my_object_store = new sTransform<string,any>( my_file_repo JSON.stringify,
 
 Some repo's can store only a limited set of values, eg. the FileRepo can only accept sting values.
 
-# General API
+### General API
 
 This package is written in typescripts so explicitly importing `.d.ts` file should not be required.
 
 However generic repo interfaces are defined in `src/typings.d.ts`, and the
 synchronous API is provided here for tautological purposes:
 
-## Synchronous API
+#### Synchronous API
 
 ```typescript
 // an object type used for queries:
@@ -383,8 +383,7 @@ interface sync_repository<T> {
 }
 ```
 
-
-## Asynchronous API
+#### Asynchronous API
 
 Method signatures are the same as the synchronous versions, but return a [bluebird
 promise](http://bluebirdjs.com/docs/getting-started.html) for each return value.
