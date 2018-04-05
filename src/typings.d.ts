@@ -34,14 +34,6 @@ export interface remote_repo_config {
     suffix?:string;
 }
 
-export interface repo_router_config { 
-    repository:repository<any>;
-    router?:any;  // TODO : give this the Express app type
-    query_credentials?:() => void;
-    modify_credentials?:() => void;
-    dependency_repo?:repository<{[x:string]:string}>
-}
-
 // FUNCTION PARAMETERS INTERFACE
 export interface package_loc {
     name:string;

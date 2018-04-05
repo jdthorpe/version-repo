@@ -243,7 +243,7 @@ var host_repo = new MemoryRepo()
 var my_repo = new sTransform(host_repo,JSON.stringify,JSON.parse)
 ```
 
-the same examlple in TypeScript:
+the same examlple in TypeScript with generic typing:
 
 ```javascript
 var host_repo = new MemoryRepo<string>()
@@ -255,7 +255,7 @@ var my_repo = new sTransform<string,any>(host_repo,JSON.stringify,JSON.parse)
  ===============================================
 -->
 
-### dTransform  *(API: Synchronous, Stored Types: Any)*
+## dTransform  *(API: Synchronous, Stored Types: Any)*
 
 An asynchronous (i.e. *Deffered*) repo which forwards all requests to another version repo and
 performs transformations of the objects in transit. 
@@ -263,12 +263,6 @@ performs transformations of the objects in transit.
 This is particularly useful for wrapping asynchronous repo's with limited storage types, 
 such as the File and Remote (HTTP/S) Repo's in
 [version-repo-node](https://www.npmjs.com/package/version-repo-node)) 
-
-```TypeScript
-import { dTransform } from "version-repo"
-new Transformer<S,T>(repo,storify,destorify)
-new require("version-repo").Transformer(repo,storify,destorify)
-```
 
 ##### Constructor parameters
 
@@ -284,14 +278,14 @@ transformed values.
 
 ```javascript
 var string_only_repo = new MemoryRepo()
-var my_async_repo = new sTransform(string_only_repo,JSON.stringify,JSON.parse)
+var my_async_repo = new dTransform(string_only_repo,JSON.stringify,JSON.parse)
 ```
 
-the same examlple in TypeScript:
+the same examlple in TypeScript with generic typing:
 
 ```TypeScript
 var string_only_repo = new MemoryRepo<string>()
-var my_async_repo = new sTransform<string,any>(string_only_repo,JSON.stringify,JSON.parse)
+var my_async_repo = new dTransform<string,any>(string_only_repo,JSON.stringify,JSON.parse)
 ```
 
 
