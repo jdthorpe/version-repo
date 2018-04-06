@@ -21,10 +21,7 @@ querying them http/https, and perfomning tranformations when storing and/or
 fetching your resources (e.g. stringifying / parsing JSON objects stored on
 disk).
 
-
-<!-- =============================================== -->
 # API
-<!-- =============================================== -->
 
 ## Storing resources
 
@@ -127,7 +124,6 @@ we can pass an options object to fetch, specifying the `novealue:true`
 repo.fetch({B:"1.1.4"},{novalue:true}) 
 ```
 
-
 Conveniently, attempting to fetch an conflicted set of resources throws a
 `Version Conflict` error, when there is no set of resources
 which satisfies your query:
@@ -165,10 +161,7 @@ However by default you may only delete the latest version of the resource,
 which can be changed by setting `delete:"any"` or `delete:"none"` when
 instantiating the repo. 
 
-
-<!-- =============================================== -->
 # Repositories Classes
-<!-- =============================================== -->
 
 ## MemoryRepo *(API: Synchronous, Stored Types: Any)*
 
@@ -186,9 +179,6 @@ A synchronous repository which keeps resources in memory.
 var my_repo = new MemoryRepo()
 ```
 
-<!-- 
- ===============================================
--->
 ## ReadonlyBuffer *(API: Async, Stored Types: Any)*
 
 A ReadOnly Buffer repository is a read-only wrapper which keeps local copies of
@@ -196,7 +186,6 @@ resources queried from another 'host' repository.  This is particularly useful
 if the host repo is on another physical machine, for example to reduce the number
 of network requests of mobile apps.  Local resources are stored in memory and
 calls to create/update/delete methods are forwarded onto the host repository. 
-
 
 ##### Constructor parameters
 
@@ -208,11 +197,6 @@ calls to create/update/delete methods are forwarded onto the host repository.
 var host_repo = new MemoryRepo()
 var my_readonly_repo =new ReadonlyBuffer(host_repo)
 ```
-
-
-<!-- 
- ===============================================
--->
 
 ## sTransform *(API: Synchronous, Stored Types: Any)*
 
@@ -249,12 +233,6 @@ the same examlple in TypeScript with generic typing:
 var host_repo = new MemoryRepo<string>()
 var my_repo = new sTransform<string,any>(host_repo,JSON.stringify,JSON.parse)
 ```
-
-
-<!-- 
- ===============================================
--->
-
 ## dTransform  *(API: Synchronous, Stored Types: Any)*
 
 An asynchronous (i.e. *Deffered*) repo which forwards all requests to another version repo and
@@ -288,15 +266,7 @@ var string_only_repo = new MemoryRepo<string>()
 var my_async_repo = new dTransform<string,any>(string_only_repo,JSON.stringify,JSON.parse)
 ```
 
-
-
-
-
-<!-- =============================================== -->
-<!-- =============================================== -->
 # Working with TypeScript
-<!-- =============================================== -->
-<!-- =============================================== -->
 
 Every repo's that can potentially store any type of object accept a type parameter:
 
