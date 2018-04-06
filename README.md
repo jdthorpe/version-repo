@@ -89,16 +89,16 @@ repo.create({name:"A",version:"1.1.3",value:"abC"});
 repo.create({name:"A",version:"1.2.3",value:"ABc"});
 repo.create({name:"A",version:"2.0.0",value:"ABC"});
 
-repo.create({name:"B",version:"1.0.0",value:"def",requires:{"A":"~1.0.0"});
-repo.create({name:"B",version:"1.1.1",value:"Def",requires:{"A":"~1.1.1"});
-repo.create({name:"B",version:"1.1.3",value:"DEf",requires:{"A":"1.1.2"});
-repo.create({name:"B",version:"1.1.4",value:"DEF",requires:{"A":"~2.0.0"});
+repo.create({name:"B",version:"1.0.0",value:"def",depends:{"A":"~1.0.0"});
+repo.create({name:"B",version:"1.1.1",value:"Def",depends:{"A":"~1.1.1"});
+repo.create({name:"B",version:"1.1.3",value:"DEf",depends:{"A":"1.1.2"});
+repo.create({name:"B",version:"1.1.4",value:"DEF",depends:{"A":"~2.0.0"});
 
 repo.create({name:"C",version:"1.0.0",value:"efg");
-repo.create({name:"C",version:"1.1.1",value:"Efg",requires:{"B":"~1.1.1"});
-repo.create({name:"C",version:"1.1.2",value:"EFg",requires:{"B":"~1.1.2"});
-repo.create({name:"C",version:"1.1.3",value:"EFg",requires:{"B":"1.1.1","A":"2.0.0"}); // this set of requirements are in conflict...
-repo.create({name:"C",version:"1.1.4",value:"efG",requires:{"B":"~1.1.3"});
+repo.create({name:"C",version:"1.1.1",value:"Efg",depends:{"B":"~1.1.1"});
+repo.create({name:"C",version:"1.1.2",value:"EFg",depends:{"B":"~1.1.2"});
+repo.create({name:"C",version:"1.1.3",value:"EFg",depends:{"B":"1.1.1","A":"2.0.0"}); // this set of requirements are in conflict...
+repo.create({name:"C",version:"1.1.4",value:"efG",depends:{"B":"~1.1.3"});
 ```
 
 with our more mature repository, we can query the complete set of resources
@@ -108,13 +108,13 @@ that are required for by our query using the `feth()` method:
 repo.fetch([{name:"B",version:"1.1.4"}]) 
 ```
 
-similarly,  the `requires()` method will return list of resources which match
+similarly,  the `depends()` method will return list of resources which match
 your query, (but not the resources themselves...)
 
 ```javascript
 // Calculate dependencies 
-repo.requires({B:"1.1.4"}) // {A:"2.0.0",B:"1.1.4",}
-repo.requires({B:"1.1.4",C:"1.1.1"}) // {A:"2.0.0",B:"1.1.4",C:"1.1.1"}
+repo.depends({B:"1.1.4"}) // {A:"2.0.0",B:"1.1.4",}
+repo.depends({B:"1.1.4",C:"1.1.1"}) // {A:"2.0.0",B:"1.1.4",C:"1.1.1"}
 ```
 
 and to get the list of resources, and their dependencies, but *not* the values, 
