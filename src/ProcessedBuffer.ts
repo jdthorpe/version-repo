@@ -1,19 +1,24 @@
 import { MemoryRepo } from './memory_repo';
-import * as Promise from 'bluebird';
-import * as semver from 'semver';
-import { isPackageLoc } from './utils';
+import { ReadonlyBuffer } from "./buffer"
+import { dTransform, sTransform } from "./transform"
 import { calculate_dependencies } from './version_resolution';
-import { 
-    package_loc,
+import { isPackageLoc } from './utils';
+import * as semver from 'semver';
+import * as Promise from 'bluebird';
+
+
+import { package_loc,
     resource_data,
-    bare_deferred_readable_repository,
+    repository,
+    deferred_repository,
+    sync_repository,
     deferred_readable_repository,
-    readable_repository,
+    bare_deferred_readable_repository,
+    resource_descriptor,
     fetch_opts,
     ConfigOptions } from   "./typings";
 
-
-export class ReadonlyBuffer<T> implements deferred_readable_repository<T> { 
+export class ProcessedBuffer<S,T> implements deferred_readable_repository<T> {
 
     versions_cache: {[x:string]: string[]};
     lastest_versions_cache: {[x:string]: string};
@@ -21,7 +26,8 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
     // an indicator that the versions cache has been popoulated by the full set of versions.
     full_versions_cache:boolean;
 
-    constructor(public remote_store:readable_repository<T>,
+    constructor(public remote_store:deferred_readable_repository<S>,
+                private process:{(x:S):(T|Promise<T>)},
                 options:ConfigOptions|MemoryRepo<T> = new MemoryRepo()){ 
         // the local store stores promises for the resourse data
         if(options instanceof MemoryRepo){
@@ -35,8 +41,6 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
         this.lastest_versions_cache = {};
     }
 
-    fetch(query:package_loc,opts?:fetch_opts):Promise<resource_data<T>[]>;
-    fetch(query:package_loc[],opts?:fetch_opts):Promise<resource_data<T>[]>;
     fetch(query:package_loc[]|package_loc,opts?:fetch_opts):Promise<resource_data<T>[]>{
 
         if(Array.isArray(query)){
@@ -59,10 +63,9 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
         }
     }
 
-    
-    depends(x:package_loc | package_loc[] | {[key: string]:string},cached:boolean=true):Promise<package_loc[]>{
+    depends(x:package_loc | package_loc[] | {[key: string]:string},cached:boolean=true):Promise<package_loc[]> {
         if(!cached)
-            return Promise.resolve(this.remote_store.depends(x));// then(x =>  { it would be possible to verify the depends is consistent witht the stored value...})
+            return this.remote_store.depends(x);// then(x =>  { it would be possible to verify the depends is consistent witht the stored value...})
 
         var bare_repo:bare_deferred_readable_repository = {
             fetchOne: (request:package_loc,opts?:fetch_opts) => this.fetchOne(request,{novalue:true,cached:true}),
@@ -151,21 +154,29 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
                 // RETURN THE LOCALLY STORED VERSION, if available
                 return Promise.resolve(this.local_store.fetchOne(rqst));
             } catch (err) {
-                return Promise.resolve(this.remote_store.fetchOne(rqst))
-                    .then(x => {
-                        if(!opts.novalue) {
-                            // only store the object if the value was also included in the returned value...
-                            this.local_store.create({
-                                name: x.name,
-                                version: x.version,
-                                value: x.value,
-                                depends: x.depends,
-                                force: true,
-                            });
-                        }
-                        return x;
-                    });
-
+                if(opts.novalue){
+                    return <Promise<resource_descriptor>>Promise.resolve(this.remote_store.fetchOne(rqst))
+                }else{
+                    return Promise.resolve(this.remote_store.fetchOne(rqst))
+                        .then(x =>  {
+                            return Promise.resolve(this.process(x.value))
+                                .then(y => {
+                                    this.local_store.create({
+                                        name: x.name,
+                                        version: x.version,
+                                        value: y,
+                                        depends: x.depends,
+                                        force: true,
+                                    })    
+                                    return {
+                                        name: x.name,
+                                        version: x.version,
+                                        value: y,
+                                        depends: x.depends,
+                                    }
+                                })
+                        })
+                }
             } 
         })
     }

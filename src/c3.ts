@@ -7,7 +7,7 @@ export default function(name) {
   return new C3(name)
 }
 
-class C3 {
+export class C3 {
 
     name:string;
     map:{[x:string]:string[]};

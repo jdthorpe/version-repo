@@ -12,5 +12,7 @@ exports.calculate_dependencies = version_resolution_1.calculate_dependencies;
 var transform_1 = require("./src/transform");
 exports.dTransform = transform_1.dTransform;
 exports.sTransform = transform_1.sTransform;
+var ProcessedBuffer_1 = require("./src/ProcessedBuffer");
+exports.ProcessedBuffer = ProcessedBuffer_1.ProcessedBuffer;
 __export(require("./src/utils"));
 //# sourceMappingURL=index.js.map

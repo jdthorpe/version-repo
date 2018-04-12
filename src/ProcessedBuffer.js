@@ -1,14 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var memory_repo_1 = require("./memory_repo");
-var Promise = require("bluebird");
-var semver = require("semver");
-var utils_1 = require("./utils");
 var version_resolution_1 = require("./version_resolution");
-var ReadonlyBuffer = /** @class */ (function () {
-    function ReadonlyBuffer(remote_store, options) {
+var utils_1 = require("./utils");
+var semver = require("semver");
+var Promise = require("bluebird");
+var ProcessedBuffer = /** @class */ (function () {
+    function ProcessedBuffer(remote_store, process, options) {
         if (options === void 0) { options = new memory_repo_1.MemoryRepo(); }
         this.remote_store = remote_store;
+        this.process = process;
         // the local store stores promises for the resourse data
         if (options instanceof memory_repo_1.MemoryRepo) {
             this.local_store = options;
@@ -20,7 +21,7 @@ var ReadonlyBuffer = /** @class */ (function () {
         this.full_versions_cache = false;
         this.lastest_versions_cache = {};
     }
-    ReadonlyBuffer.prototype.fetch = function (query, opts) {
+    ProcessedBuffer.prototype.fetch = function (query, opts) {
         var _this = this;
         if (Array.isArray(query)) {
             var names_1 = query.map(function (x) { return x.name; });
@@ -42,11 +43,11 @@ var ReadonlyBuffer = /** @class */ (function () {
             return this.fetchOne(query, opts).then(function (x) { return [x]; });
         }
     };
-    ReadonlyBuffer.prototype.depends = function (x, cached) {
+    ProcessedBuffer.prototype.depends = function (x, cached) {
         var _this = this;
         if (cached === void 0) { cached = true; }
         if (!cached)
-            return Promise.resolve(this.remote_store.depends(x)); // then(x =>  { it would be possible to verify the depends is consistent witht the stored value...})
+            return this.remote_store.depends(x); // then(x =>  { it would be possible to verify the depends is consistent witht the stored value...})
         var bare_repo = {
             fetchOne: function (request, opts) { return _this.fetchOne(request, { novalue: true, cached: true }); },
             versions: function (name) { return _this.versions(name, true); }
@@ -66,7 +67,7 @@ var ReadonlyBuffer = /** @class */ (function () {
     };
     ;
     // TODO: opts:fetch_opts could have it's type narrowed to just {cached:boolean}, I think
-    ReadonlyBuffer.prototype.fetchOne = function (request, opts) {
+    ProcessedBuffer.prototype.fetchOne = function (request, opts) {
         var _this = this;
         // ------------------------------
         // RESOLVE THE VERSION
@@ -116,36 +117,46 @@ var ReadonlyBuffer = /** @class */ (function () {
                 return Promise.resolve(_this.local_store.fetchOne(rqst));
             }
             catch (err) {
-                return Promise.resolve(_this.remote_store.fetchOne(rqst))
-                    .then(function (x) {
-                    if (!opts.novalue) {
-                        // only store the object if the value was also included in the returned value...
-                        _this.local_store.create({
-                            name: x.name,
-                            version: x.version,
-                            value: x.value,
-                            depends: x.depends,
-                            force: true,
+                if (opts.novalue) {
+                    return Promise.resolve(_this.remote_store.fetchOne(rqst));
+                }
+                else {
+                    return Promise.resolve(_this.remote_store.fetchOne(rqst))
+                        .then(function (x) {
+                        return Promise.resolve(_this.process(x.value))
+                            .then(function (y) {
+                            _this.local_store.create({
+                                name: x.name,
+                                version: x.version,
+                                value: y,
+                                depends: x.depends,
+                                force: true,
+                            });
+                            return {
+                                name: x.name,
+                                version: x.version,
+                                value: y,
+                                depends: x.depends,
+                            };
                         });
-                    }
-                    return x;
-                });
+                    });
+                }
             }
         });
     };
-    ReadonlyBuffer.prototype.create = function (request, pkg) {
+    ProcessedBuffer.prototype.create = function (request, pkg) {
         return Promise.reject(Error('Cannot create a record in a read-only buffer'));
     };
-    ReadonlyBuffer.prototype.update = function (request, pkg) {
+    ProcessedBuffer.prototype.update = function (request, pkg) {
         return Promise.reject(Error('Cannot update a record in a read-only buffer'));
     };
-    ReadonlyBuffer.prototype.del = function (request) {
+    ProcessedBuffer.prototype.del = function (request) {
         return Promise.reject(Error('Cannot delete a record in a read-only buffer'));
     };
     // ------------------------------
     // ENUMERATION (defer to the remote)
     // ------------------------------
-    ReadonlyBuffer.prototype.latest_version = function (name, cached) {
+    ProcessedBuffer.prototype.latest_version = function (name, cached) {
         if (cached === void 0) { cached = true; }
         if (cached && name in this.lastest_versions_cache) {
             return Promise.resolve(this.lastest_versions_cache[name]);
@@ -154,10 +165,10 @@ var ReadonlyBuffer = /** @class */ (function () {
             return Promise.resolve(this.remote_store.latest_version(name));
         }
     };
-    ReadonlyBuffer.prototype.versions_sync = function (name) {
+    ProcessedBuffer.prototype.versions_sync = function (name) {
         return this.local_store.versions(name);
     };
-    ReadonlyBuffer.prototype.packages = function (cached) {
+    ProcessedBuffer.prototype.packages = function (cached) {
         var _this = this;
         if (cached === void 0) { cached = true; }
         if (cached && !name && this.full_versions_cache) {
@@ -172,7 +183,7 @@ var ReadonlyBuffer = /** @class */ (function () {
             });
         }
     };
-    ReadonlyBuffer.prototype.versions = function (name, cached) {
+    ProcessedBuffer.prototype.versions = function (name, cached) {
         // param: Cached If true, return the cached set of versions if a local
         //        set of versoins were stored, else fetch them from the remote
         //        and store the returned value.  In short cached will be a bit faster but could be out of date
@@ -209,7 +220,7 @@ var ReadonlyBuffer = /** @class */ (function () {
             });
         }
     };
-    return ReadonlyBuffer;
+    return ProcessedBuffer;
 }());
-exports.ReadonlyBuffer = ReadonlyBuffer;
-//# sourceMappingURL=buffer.js.map
+exports.ProcessedBuffer = ProcessedBuffer;
+//# sourceMappingURL=ProcessedBuffer.js.map

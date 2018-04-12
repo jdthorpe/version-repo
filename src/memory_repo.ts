@@ -1,6 +1,14 @@
 
-import { package_loc, resource_data, sync_repository,fetch_opts, ConfigOptions } from   "./typings";
-import {validate_options,validate_options_range, isPackageLoc} from './utils';
+import { 
+    package_loc,
+    resource_data,
+    sync_repository,
+    fetch_opts,
+    ConfigOptions } from   "./typings";
+import { 
+    validate_options,
+    validate_options_range,
+    isPackageLoc} from './utils';
 import * as semver from 'semver';
 import { calculate_dependencies_sync } from './version_resolution';
 

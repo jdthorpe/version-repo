@@ -74,4 +74,5 @@ var C3 = /** @class */ (function () {
     };
     return C3;
 }());
+exports.C3 = C3;
 //# sourceMappingURL=c3.js.map
