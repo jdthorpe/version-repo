@@ -66,3 +66,16 @@ generate_version_resolution_tests({
 })();
 
 
+(function(){
+
+    const _backend = new repo.MemoryRepo();
+
+    generate_version_resolution_tests({
+        name: "Memory Repo with trivial async-transform and ProcessBuffer", 
+        backend: _backend,
+        repo: new repo.ProcessedBuffer(new repo.dTransform(_backend, (x => x), (x => x)),(x => x))
+    });
+
+})();
+
+

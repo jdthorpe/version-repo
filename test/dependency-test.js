@@ -44,4 +44,12 @@ version_resolution_test_fixture_1.generate_version_resolution_tests({
         repo: new repo.ReadonlyBuffer(new repo.dTransform(_backend, (function (x) { return x; }), (function (x) { return x; })))
     });
 })();
+(function () {
+    var _backend = new repo.MemoryRepo();
+    version_resolution_test_fixture_1.generate_version_resolution_tests({
+        name: "Memory Repo with trivial async-transform and ProcessBuffer",
+        backend: _backend,
+        repo: new repo.ProcessedBuffer(new repo.dTransform(_backend, (function (x) { return x; }), (function (x) { return x; })), (function (x) { return x; }))
+    });
+})();
 //# sourceMappingURL=dependency-test.js.map
