@@ -35,5 +35,6 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "semver": "^5.5.0"
-  }
+  },
+  "typings": "types/index.d.ts"
 }
