@@ -28,7 +28,6 @@ export interface Url {
 }
 
 export interface remote_repo_config { 
-    app?:any,
     server_config?:Url,
     base_url?:string; 
     suffix?:string;

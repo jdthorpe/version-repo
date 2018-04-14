@@ -14,5 +14,7 @@ exports.dTransform = transform_1.dTransform;
 exports.sTransform = transform_1.sTransform;
 var ProcessedBuffer_1 = require("./src/ProcessedBuffer");
 exports.ProcessedBuffer = ProcessedBuffer_1.ProcessedBuffer;
+var remote_repo_1 = require("./src/remote_repo");
+exports.RemoteRepo = remote_repo_1.RemoteRepo;
 __export(require("./src/utils"));
 //# sourceMappingURL=index.js.map
