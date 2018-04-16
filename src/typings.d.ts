@@ -9,6 +9,7 @@ export interface ConfigOptions {
 export interface file_repo_config extends ConfigOptions{ 
     directory:string;
     ext?:string;  
+    force?:boolean;
 }
 
 // borrowed from node.d.ts "url" module

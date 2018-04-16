@@ -46,7 +46,7 @@ export class ProcessedBuffer<S,T> implements deferred_readable_repository<T> {
         if(Array.isArray(query)){
 
             const names = query.map(x => x.name);
-            return this.depends(query,opts.cached)
+            return this.depends(query,opts && opts.cached)
                     .then(pkgs => 
                             Promise.all(pkgs
                                         .filter(x => (opts && opts.dependencies) || names.indexOf(x.name) != -1)
@@ -97,7 +97,7 @@ export class ProcessedBuffer<S,T> implements deferred_readable_repository<T> {
         if(!request.version || request.version === 'latest'){
             // THE 'LATEST' VERSION HAS BEEN REQUESTED
 
-            if( opts.cached && this.lastest_versions_cache.hasOwnProperty(request.name) ){
+            if( opts && opts.cached && this.lastest_versions_cache.hasOwnProperty(request.name) ){
 
                 _version = Promise.resolve(this.lastest_versions_cache[request.name])
 
@@ -119,19 +119,18 @@ export class ProcessedBuffer<S,T> implements deferred_readable_repository<T> {
         }else if(semver.validRange(request.version)){
 
             // RESOLVE THE RANGE TO A SPECIFIC VERSION
-            if( opts.cached && this.versions_cache.hasOwnProperty(request.name) ){
+            if( opts && opts.cached && this.versions_cache.hasOwnProperty(request.name) ){
 
                 // RESOLVE THE VERSION USING THE CACHED VERSIONS
                 var version:string = 
                     semver.maxSatisfying(
-                            this.versions_cache[request.name],
-                            request.version);
+                            this.versions_cache[request.name], request.version);
                 _version = Promise.resolve(version)
 
             }else{
 
                 // RESOLVE THE VERSION FROM VERSIONS FETCHED FROM THE SERVER
-                _version = this.versions(request.name,opts.cached).then(
+                _version = this.versions(request.name,opts && opts.cached).then(
                     (versions:string[]) => {
                         // cache the versions for next time
                         this.versions_cache[request.name] = versions;
@@ -154,7 +153,7 @@ export class ProcessedBuffer<S,T> implements deferred_readable_repository<T> {
                 // RETURN THE LOCALLY STORED VERSION, if available
                 return Promise.resolve(this.local_store.fetchOne(rqst));
             } catch (err) {
-                if(opts.novalue){
+                if(opts && opts.novalue){
                     return <Promise<resource_descriptor>>Promise.resolve(this.remote_store.fetchOne(rqst))
                 }else{
                     return Promise.resolve(this.remote_store.fetchOne(rqst))

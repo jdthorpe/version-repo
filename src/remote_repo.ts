@@ -1,6 +1,5 @@
 
 import * as request from 'superagent-bluebird-promise';
-
 import * as Promise from 'bluebird';
 import * as semver from 'semver';
 
@@ -14,6 +13,7 @@ export class RemoteRepo<T> implements deferred_repository<T> {
 
     //constructor(public base_url:string){ }
     base_url:string;
+
     constructor(public params:remote_repo_config){
         this.base_url = !!params.base_url?params.base_url: "";
     }

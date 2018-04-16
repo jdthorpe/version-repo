@@ -42,7 +42,7 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
         if(Array.isArray(query)){
 
             const names = query.map(x => x.name);
-            return this.depends(query,opts.cached)
+            return this.depends(query,opts && opts.cached)
                     .then(pkgs => 
                             Promise.all(pkgs
                                         .filter(x => (opts && opts.dependencies) || names.indexOf(x.name) != -1)
@@ -50,7 +50,7 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
                     )
 
         }else if(opts && opts.dependencies){
-            return this.depends([query],opts.cached)
+            return this.depends([query],opts && opts.cached)
                     .then(pkgs => 
                             Promise.all(pkgs
                                         .map(x => this.fetchOne(x,opts))));
@@ -94,7 +94,7 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
         if(!request.version || request.version === 'latest'){
             // THE 'LATEST' VERSION HAS BEEN REQUESTED
 
-            if( opts.cached && this.lastest_versions_cache.hasOwnProperty(request.name) ){
+            if( opts && opts.cached && this.lastest_versions_cache.hasOwnProperty(request.name) ){
 
                 _version = Promise.resolve(this.lastest_versions_cache[request.name])
 
@@ -116,7 +116,7 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
         }else if(semver.validRange(request.version)){
 
             // RESOLVE THE RANGE TO A SPECIFIC VERSION
-            if( opts.cached && this.versions_cache.hasOwnProperty(request.name) ){
+            if( opts && opts.cached && this.versions_cache.hasOwnProperty(request.name) ){
 
                 // RESOLVE THE VERSION USING THE CACHED VERSIONS
                 var version:string = 
@@ -128,7 +128,7 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
             }else{
 
                 // RESOLVE THE VERSION FROM VERSIONS FETCHED FROM THE SERVER
-                _version = this.versions(request.name,opts.cached).then(
+                _version = this.versions(request.name,opts && opts.cached).then(
                     (versions:string[]) => {
                         // cache the versions for next time
                         this.versions_cache[request.name] = versions;
@@ -153,7 +153,7 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
             } catch (err) {
                 return Promise.resolve(this.remote_store.fetchOne(rqst))
                     .then(x => {
-                        if(!opts.novalue) {
+                        if(!(opts && opts.novalue)) {
                             // only store the object if the value was also included in the returned value...
                             this.local_store.create({
                                 name: x.name,

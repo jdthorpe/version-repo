@@ -25,7 +25,7 @@ var ProcessedBuffer = /** @class */ (function () {
         var _this = this;
         if (Array.isArray(query)) {
             var names_1 = query.map(function (x) { return x.name; });
-            return this.depends(query, opts.cached)
+            return this.depends(query, opts && opts.cached)
                 .then(function (pkgs) {
                 return Promise.all(pkgs
                     .filter(function (x) { return (opts && opts.dependencies) || names_1.indexOf(x.name) != -1; })
@@ -75,7 +75,7 @@ var ProcessedBuffer = /** @class */ (function () {
         var _version;
         if (!request.version || request.version === 'latest') {
             // THE 'LATEST' VERSION HAS BEEN REQUESTED
-            if (opts.cached && this.lastest_versions_cache.hasOwnProperty(request.name)) {
+            if (opts && opts.cached && this.lastest_versions_cache.hasOwnProperty(request.name)) {
                 _version = Promise.resolve(this.lastest_versions_cache[request.name]);
             }
             else {
@@ -92,14 +92,14 @@ var ProcessedBuffer = /** @class */ (function () {
         }
         else if (semver.validRange(request.version)) {
             // RESOLVE THE RANGE TO A SPECIFIC VERSION
-            if (opts.cached && this.versions_cache.hasOwnProperty(request.name)) {
+            if (opts && opts.cached && this.versions_cache.hasOwnProperty(request.name)) {
                 // RESOLVE THE VERSION USING THE CACHED VERSIONS
                 var version = semver.maxSatisfying(this.versions_cache[request.name], request.version);
                 _version = Promise.resolve(version);
             }
             else {
                 // RESOLVE THE VERSION FROM VERSIONS FETCHED FROM THE SERVER
-                _version = this.versions(request.name, opts.cached).then(function (versions) {
+                _version = this.versions(request.name, opts && opts.cached).then(function (versions) {
                     // cache the versions for next time
                     _this.versions_cache[request.name] = versions;
                     return semver.maxSatisfying(versions, request.version);
@@ -117,7 +117,7 @@ var ProcessedBuffer = /** @class */ (function () {
                 return Promise.resolve(_this.local_store.fetchOne(rqst));
             }
             catch (err) {
-                if (opts.novalue) {
+                if (opts && opts.novalue) {
                     return Promise.resolve(_this.remote_store.fetchOne(rqst));
                 }
                 else {

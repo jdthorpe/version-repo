@@ -33,7 +33,7 @@ x, repo) {
                 try {
                     //formerly: MRO.run().map( (name: string) => {
                     var out = MRO.run().slice(1).map(function (name) {
-                        console.log(JSON.stringify({ name: name, version: VERSIONS[name] }, null, 4));
+                        //console.log(JSON.stringify({ name:name, version:VERSIONS[name] },null,4))
                         return {
                             name: name,
                             version: VERSIONS[name]
@@ -77,7 +77,7 @@ x, repo) {
                 // GATHER ANY DEPENDENCIES OF THIS VERSION
                 return Promise.resolve(repo.fetchOne({ name: d.name, version: v }, { novalue: true }))
                     .then(function (x) {
-                    if (!x.hasOwnProperty("depends"))
+                    if (!x.depends) // formerly x.hasOwnProperty("depends")
                         // nothing to do.
                         return __resolve__();
                     var depends = x.depends;
@@ -91,7 +91,7 @@ x, repo) {
                     });
                     new_dependencies.map(function (nd) {
                         if (!utils_1.is_package_loc(nd))
-                            throw new Error("internal error; got an invalid package descriptor");
+                            throw new Error("internal error; got an invalid package descriptor: " + JSON.stringify(nd));
                         // append the depth to each new dependency
                         nd.depth = d.depth + 1;
                         // KEEP TRACK OF THE PATH TO EACH PACKAGE IMPORT
@@ -161,7 +161,7 @@ x, repo) {
         // RECORD THE VERSION
         VERSIONS[d.name] = v;
         var obj = repo.fetchOne({ name: d.name, version: v }, { novalue: true });
-        if (!obj.hasOwnProperty("depends"))
+        if (!obj.depends) // formerly !obj.hasOwnProperty("depends")
             continue;
         var depends = obj.depends;
         // GATHER ANY DEPENDENCIES OF THIS VERSION

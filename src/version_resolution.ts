@@ -61,7 +61,7 @@ export function calculate_dependencies  (
                 try{
                     //formerly: MRO.run().map( (name: string) => {
                     const out = MRO.run().slice(1).map( (name: string) => {
-                        console.log(JSON.stringify({ name:name, version:VERSIONS[name] },null,4))
+                        //console.log(JSON.stringify({ name:name, version:VERSIONS[name] },null,4))
                         return {
                             name:name, 
                             version:VERSIONS[name]
@@ -114,7 +114,7 @@ export function calculate_dependencies  (
                     // GATHER ANY DEPENDENCIES OF THIS VERSION
                     return Promise.resolve(repo.fetchOne({name:d.name,version:v},{novalue:true}))
                             .then( x => {
-                                if(!x.hasOwnProperty("depends"))
+                                if(!x.depends) // formerly x.hasOwnProperty("depends")
                                     // nothing to do.
                                     return __resolve__();
 
@@ -131,7 +131,7 @@ export function calculate_dependencies  (
                                 new_dependencies.map( (nd:package_descriptor) => {
 
                                     if(!is_package_loc(nd))
-                                        throw new Error("internal error; got an invalid package descriptor")
+                                        throw new Error(`internal error; got an invalid package descriptor: ${JSON.stringify(nd)}`)
 
                                     // append the depth to each new dependency
                                     nd.depth = d.depth + 1;
@@ -228,7 +228,7 @@ export function calculate_dependencies_sync  (
         VERSIONS[d.name] = v;
 
         const obj = repo.fetchOne({name:d.name,version:v},{novalue:true});
-        if(!obj.hasOwnProperty("depends"))
+        if(! obj.depends ) // formerly !obj.hasOwnProperty("depends")
             continue;
         var depends = obj.depends;
 

@@ -82,6 +82,10 @@ function generate_tests(inst) {
             return Promise.resolve(inst.repo.fetchOne({ name: 'foo', version: 'v1.1.1' }))
                 .should.eventually.deep.equal({ name: 'foo', version: '1.1.1', value: 'Lorem Ipsum dolor sit amet, ...' });
         });
+        it('fetchOne() should get the latest version of the liberay when the version is not provided explicitly', function () {
+            return Promise.resolve(inst.repo.fetchOne({ name: 'foo' }))
+                .should.eventually.deep.equal({ name: 'foo', version: '1.1.1', value: 'Lorem Ipsum dolor sit amet, ...' });
+        });
         it('POST(create) should create a library with a dependency', function () {
             // FOR TESTING THE READ ONLY BUFFER
             return Promise.resolve(inst.repo.create({ name: 'bar', version: 'v1.1.2', value: 'Lorem Ipsum dolor sit amet, ...', depends: { "foo": "~1.0.0" } }))
