@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("./utils");
+var type_guards_1 = require("./type-guards");
 var semver = require("semver");
 var version_resolution_1 = require("./version_resolution");
 var MemoryRepo = /** @class */ (function () {
@@ -59,11 +60,13 @@ var MemoryRepo = /** @class */ (function () {
             var out = version_resolution_1.calculate_dependencies_sync(x, this);
             return out;
         }
-        if (utils_1.isPackageLoc(x)) {
+        if (type_guards_1.is_package_loc(x)) {
             var out = version_resolution_1.calculate_dependencies_sync([x], this);
             return out;
         }
         else {
+            if (!type_guards_1.ajv_is_depends_object(x))
+                throw Error("Expected an object with valid names and semver strings but got error " + type_guards_1.ajv_is_depends_object.errors);
             var y = Object.keys(x)
                 .filter(function (y) { return x.hasOwnProperty(y); })
                 .map(function (y) { return { name: y, version: x[y] }; });

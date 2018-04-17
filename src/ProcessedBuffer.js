@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var memory_repo_1 = require("./memory_repo");
 var version_resolution_1 = require("./version_resolution");
-var utils_1 = require("./utils");
+var type_guards_1 = require("./type-guards");
 var semver = require("semver");
 var Promise = require("bluebird");
 var ProcessedBuffer = /** @class */ (function () {
@@ -55,10 +55,12 @@ var ProcessedBuffer = /** @class */ (function () {
         if (Array.isArray(x)) {
             return version_resolution_1.calculate_dependencies(x, bare_repo);
         }
-        if (utils_1.isPackageLoc(x)) {
+        if (type_guards_1.is_package_loc(x)) {
             return version_resolution_1.calculate_dependencies([x], bare_repo);
         }
         else {
+            if (!type_guards_1.ajv_is_depends_object(x))
+                throw Error("Expected an object with valid names and semver strings but got error " + type_guards_1.ajv_is_depends_object.errors);
             var y = Object.keys(x)
                 .filter(function (y) { return x.hasOwnProperty(y); })
                 .map(function (y) { return { name: y, version: x[y] }; });

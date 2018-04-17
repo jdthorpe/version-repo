@@ -17,4 +17,5 @@ exports.ProcessedBuffer = ProcessedBuffer_1.ProcessedBuffer;
 var remote_repo_1 = require("./src/remote_repo");
 exports.RemoteRepo = remote_repo_1.RemoteRepo;
 __export(require("./src/utils"));
+__export(require("./src/type-guards"));
 //# sourceMappingURL=index.js.map

@@ -1,21 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var semver_1 = require("semver");
-function is_package_loc(x) {
-    if (x === undefined)
-        return false;
-    if (typeof x.name !== "string" || !exports.name_regex.test(x.name))
-        return false;
-    if (!x.version || x.version === 'latest') {
-        x.version = ">=0.0.1";
-        return true;
-    }
-    if (typeof x.version !== "string" || !(semver_1.validRange(x.version) || x.version === "latest"))
-        return false;
-    return true;
-}
-exports.is_package_loc = is_package_loc;
-exports.name_regex = /^([a-zA-Z](?:(-(?=[A-Za-z]))|[a-zA-Z])*)$/;
+exports.name_regex_pattern = "^([a-zA-Z](?:(-(?=[A-Za-z]))|[a-zA-Z])*)$";
+exports.name_regex = new RegExp(exports.name_regex_pattern);
 function validate_options(options) {
     if (!options.name) {
         throw new Error('missing required value options.name');
@@ -60,12 +47,4 @@ function validate_options_range(options) {
     }
 }
 exports.validate_options_range = validate_options_range;
-function isPackageLoc(x) {
-    var keys = Object.keys(x).filter(function (n) { return x.hasOwnProperty(n); });
-    if (keys.length != 2)
-        return false;
-    keys.sort();
-    return keys[0] == "name" && keys[1] == "version";
-}
-exports.isPackageLoc = isPackageLoc;
 //# sourceMappingURL=utils.js.map

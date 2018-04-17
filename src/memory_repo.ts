@@ -7,8 +7,8 @@ import {
     ConfigOptions } from   "./typings";
 import { 
     validate_options,
-    validate_options_range,
-    isPackageLoc} from './utils';
+    validate_options_range } from './utils';
+import { is_package_loc, ajv_is_depends_object } from './type-guards';
 import * as semver from 'semver';
 import { calculate_dependencies_sync } from './version_resolution';
 
@@ -75,17 +75,16 @@ export class MemoryRepo<T> implements sync_repository<T> {
 
     }
 
-    depends(x:package_loc[]):package_loc[];
-    depends(x:package_loc):package_loc[];
-    depends(x:{[key: string]:string}):package_loc[];
-    depends(x){
+    depends(x:package_loc|package_loc[]|{[key: string]:string}):package_loc[]{
         if(Array.isArray(x)){
             var out =  calculate_dependencies_sync(x,this);
             return out;
-        }if(isPackageLoc(x)){
+        }if(is_package_loc(x)){
             var out =  calculate_dependencies_sync([x],this);
             return out;
         }else{
+            if(!ajv_is_depends_object(x))
+                throw Error(`Expected an object with valid names and semver strings but got error ${ ajv_is_depends_object.errors }`)
             var y:package_loc[] =  
                 Object.keys(x) 
                         .filter(y => x.hasOwnProperty(y))
@@ -188,7 +187,7 @@ export class MemoryRepo<T> implements sync_repository<T> {
         if(!loc.version){
             throw new Error("Version parameter is required when deleting a package")
         }
-        if( !(this.store[loc.name][loc.version])){
+        if( !(this.store[loc.name].hasOwnProperty(loc.version))){
             throw new Error("No such version: "+loc.version);
         }
 

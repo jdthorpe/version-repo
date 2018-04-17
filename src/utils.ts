@@ -2,28 +2,8 @@
 import { clean, validRange } from 'semver';
 import { package_loc } from   "./typings";
 
-export function is_package_loc(x:any): x is package_loc {
-
-    if( x === undefined ) 
-        return false;
-
-    if(typeof x.name !== "string" || !name_regex.test(x.name))
-        return false;
-
-    if(!x.version || x.version === 'latest'){
-        x.version = ">=0.0.1";
-        return true;
-    }
-
-    if(typeof x.version !== "string" || !(validRange(x.version) || x.version === "latest"))
-        return false;
-
-    return true;
-}
-
-
-
-export var name_regex = /^([a-zA-Z](?:(-(?=[A-Za-z]))|[a-zA-Z])*)$/;
+export const name_regex_pattern = "^([a-zA-Z](?:(-(?=[A-Za-z]))|[a-zA-Z])*)$";
+export const name_regex = new RegExp(name_regex_pattern);
 
 export function validate_options(options:package_loc):package_loc{
 
@@ -80,12 +60,4 @@ export function validate_options_range(options:package_loc):package_loc{
     }
 }
 
-
-export function isPackageLoc(x:{[k:string]:string}|package_loc): x is package_loc {
-    const keys= Object.keys(x).filter(n => x.hasOwnProperty(n))
-    if(keys.length != 2) 
-        return false;
-    keys.sort()
-    return keys[0] == "name" &&  keys[1] == "version"
-}
 

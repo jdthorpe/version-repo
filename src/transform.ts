@@ -4,7 +4,7 @@ import { package_loc, resource_data, repository, deferred_repository, sync_repos
 import * as Promise from "bluebird"
 import * as semver from 'semver';
 import { calculate_dependencies_sync } from './version_resolution';
-import { isPackageLoc } from './utils';
+import { is_package_loc, ajv_is_depends_object } from './type-guards';
 
 
 
@@ -183,9 +183,11 @@ export class sTransform<S,T>  implements sync_repository<T> {
     depends(x){
         if(Array.isArray(x)){
             return calculate_dependencies_sync(x,this);
-        }if(isPackageLoc(x)){
+        }if(is_package_loc(x)){
             return calculate_dependencies_sync([x],this);
         }else{
+            if(!ajv_is_depends_object(x))
+                throw Error(`Expected an object with valid names and semver strings but got error ${ ajv_is_depends_object.errors }`)
             var y:package_loc[] =  
                 Object.keys(x) 
                         .filter(y => x.hasOwnProperty(y))

@@ -1,0 +1,73 @@
+definitions:
+    resource-data:
+        type: object
+        properties:
+            name:
+                type: string
+                pattern: "replace me with the real pattern"
+            version:
+                oneOf:
+                  - type: string
+                    semver:
+                        valid: true
+                        loose: true
+                  - enum: 
+                        - "latest"
+            depends: 
+                $ref: "#/definitions/depends-object"
+            upsert:
+                type: boolean
+            force:
+                type: boolean
+        required:
+        - name
+        - version
+        - value
+        additionalProperties: False
+    strict-resource-loc: # strict required a version
+        type: object
+        properties:
+            name:
+                type: string
+                pattern: "replace me with the real pattern"
+            version:
+                type: string
+                semver:
+                    validRange: true
+                    loose: true
+        required:
+        - name
+        - version
+        additionalProperties: False
+    resource-loc:
+        type: object
+        properties:
+            name:
+                type: string
+                pattern: "replace me with the real pattern"
+            version:
+                type: string
+                validRange:
+                    valid: true
+                    loose: true
+        required:
+        - name
+        additionalProperties: False
+    strict-resource-loc-array:
+        type: array
+        items:
+            $ref: "#/definitions/strict-resource-loc"
+    resource-loc-array:
+        type: array
+        items:
+            $ref: "#/definitions/resource-loc"
+    depends-object:
+        type: object
+        patternProperties:
+            "replace me with the real pattern":
+                type: string
+                validRange:
+                    valid: true
+                    loose: true
+        additionalProperties: false
+

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var semver_1 = require("semver");
-var utils_1 = require("./utils");
+var type_guards_1 = require("./type-guards");
 //-- import * as Q from 'q';
 var Promise = require("bluebird");
 var c3_1 = require("./c3");
@@ -10,7 +10,9 @@ function calculate_dependencies(
 // dependency name, and each value is a string or vector of strings with 
 // the available versions for that key
 x, repo) {
-    if (!x.every(utils_1.is_package_loc))
+    x.map(function (_) { if (!_.version || _.version === 'latest')
+        _.version = ">=0.0.1"; });
+    if (!type_guards_1.is_strict_package_loc_array(x))
         throw new Error("x is not an array of package locations");
     if (repo === undefined)
         throw new Error("missing repo");
@@ -90,7 +92,9 @@ x, repo) {
                         };
                     });
                     new_dependencies.map(function (nd) {
-                        if (!utils_1.is_package_loc(nd))
+                        if ((!nd.version) || (nd.version === 'latest'))
+                            nd.version = ">=0.0.1";
+                        if (!type_guards_1.is_strict_package_loc(nd))
                             throw new Error("internal error; got an invalid package descriptor: " + JSON.stringify(nd));
                         // append the depth to each new dependency
                         nd.depth = d.depth + 1;
@@ -117,8 +121,10 @@ function calculate_dependencies_sync(
 // dependency name, and each value is a string or vector of strings with 
 // the available versions for that key
 x, repo) {
-    if (!x.every(utils_1.is_package_loc))
-        throw new Error("x is not an array of package locations");
+    x.map(function (_) { if (!_.version || _.version === 'latest')
+        _.version = ">=0.0.1"; });
+    if (!type_guards_1.is_strict_package_loc_array(x))
+        throw new Error("x  (" + JSON.stringify(x) + ") is not an array of package locations");
     if (repo === undefined)
         throw new Error("missing repo");
     var VERSIONS = {};
@@ -174,7 +180,9 @@ x, repo) {
             };
         });
         new_dependencies.map(function (nd) {
-            if (!utils_1.is_package_loc(nd))
+            if ((!nd.version) || (nd.version === 'latest'))
+                nd.version = ">=0.0.1";
+            if (!type_guards_1.is_strict_package_loc(nd))
                 throw new Error("internal error; got an invalid package descriptor");
             // append the depth to each new dependency
             nd.depth = d.depth + 1;

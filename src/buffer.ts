@@ -1,7 +1,7 @@
 import { MemoryRepo } from './memory_repo';
 import * as Promise from 'bluebird';
 import * as semver from 'semver';
-import { isPackageLoc } from './utils';
+import { is_package_loc, ajv_is_depends_object } from './type-guards';
 import { calculate_dependencies } from './version_resolution';
 import { 
     package_loc,
@@ -71,9 +71,11 @@ export class ReadonlyBuffer<T> implements deferred_readable_repository<T> {
 
         if(Array.isArray(x)){
             return calculate_dependencies(x,bare_repo);
-        }if(isPackageLoc(x)){
+        }if(is_package_loc(x)){
             return calculate_dependencies([x],bare_repo);
         }else{
+            if(!ajv_is_depends_object(x))
+                throw Error(`Expected an object with valid names and semver strings but got error ${ ajv_is_depends_object.errors }`)
             var y:package_loc[] =  
                 Object.keys(x) 
                         .filter(y => x.hasOwnProperty(y))

@@ -2,7 +2,7 @@
 import { package_loc, bare_deferred_readable_repository, sync_readable_repository } from   "./typings";
 import { maxSatisfying, satisfies } from 'semver';
 
-import { is_package_loc } from "./utils"
+import { is_strict_package_loc, is_strict_package_loc_array } from "./type-guards"
 
 //-- import * as Q from 'q';
 import * as Promise from 'bluebird';
@@ -29,7 +29,8 @@ export function calculate_dependencies  (
         ):Promise<package_loc[]>
 {
 
-    if(!x.every(is_package_loc))
+    x.map( _  => { if(!_.version || _.version === 'latest') _.version = ">=0.0.1"; })
+    if(!is_strict_package_loc_array(x))
         throw new Error("x is not an array of package locations")
     if(repo===undefined)
         throw new Error("missing repo");
@@ -130,7 +131,10 @@ export function calculate_dependencies  (
 
                                 new_dependencies.map( (nd:package_descriptor) => {
 
-                                    if(!is_package_loc(nd))
+                                    if( (!nd.version) || (nd.version === 'latest') )
+                                        nd.version = ">=0.0.1"; 
+    
+                                    if(!is_strict_package_loc(nd))
                                         throw new Error(`internal error; got an invalid package descriptor: ${JSON.stringify(nd)}`)
 
                                     // append the depth to each new dependency
@@ -169,8 +173,9 @@ export function calculate_dependencies_sync  (
         ):package_loc[]
 {
 
-    if(!x.every(is_package_loc))
-        throw new Error("x is not an array of package locations")
+    x.map( _  => { if(!_.version || _.version === 'latest') _.version = ">=0.0.1"; })
+    if(!is_strict_package_loc_array(x))
+        throw new Error(`x  (${ JSON.stringify(x) }) is not an array of package locations`)
     if(repo===undefined)
         throw new Error("missing repo");
 
@@ -243,7 +248,10 @@ export function calculate_dependencies_sync  (
 
         new_dependencies.map( (nd:package_descriptor) => {
 
-            if(!is_package_loc(nd))
+            if( (!nd.version) || (nd.version === 'latest') )
+                nd.version = ">=0.0.1"; 
+
+            if(!is_strict_package_loc(nd))
                 throw new Error("internal error; got an invalid package descriptor")
 
             // append the depth to each new dependency

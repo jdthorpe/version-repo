@@ -17,9 +17,7 @@ export declare class MemoryRepo<T> implements sync_repository<T> {
     connect(): boolean;
     is_connected(): boolean;
     create(options: resource_data<T>): boolean;
-    depends(x: package_loc[]): package_loc[];
-    depends(x: package_loc): package_loc[];
-    depends(x: {
+    depends(x: package_loc | package_loc[] | {
         [key: string]: string;
     }): package_loc[];
     fetch(query: package_loc | package_loc[], opts?: fetch_opts): resource_data<T>[];
