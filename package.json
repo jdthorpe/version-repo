@@ -40,5 +40,5 @@
     "superagent": "^3.8.2",
     "superagent-bluebird-promise": "^4.1.0"
   },
-  "typings": "index.d.ts"
+  "types": "index.d.ts"
 }

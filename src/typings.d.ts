@@ -83,7 +83,7 @@ export interface deferred_readable_repository<T> {
 
     fetchOne(x:package_loc,opts?:fetch_opts):Promise<resource_data<T>>;
 
-    depends(x:package_loc|package_loc[]|{[key: string]:string},...args):Promise<package_loc[]>;
+    depends(x:package_loc|package_loc[]|{[key: string]:string}):Promise<package_loc[]>; // ,...args
 
     //------------------------------
     // ENUMERATION 
@@ -124,7 +124,7 @@ export interface deferred_repository<T> {
 
     fetchOne(x:package_loc,opts?:fetch_opts):Promise<resource_data<T>>;
 
-    depends(x:package_loc|package_loc[]|{[key: string]:string},...args):Promise<package_loc[]>;
+    depends(x:package_loc|package_loc[]|{[key: string]:string}):Promise<package_loc[]>; // ,...args
 
     //------------------------------
     // ENUMERATION 
@@ -148,7 +148,7 @@ export interface sync_readable_repository<T> {
 
     fetchOne(x:package_loc,opts?:fetch_opts):resource_data<T>;
 
-    depends(x:package_loc|package_loc[]|{[key: string]:string},...args):package_loc[];
+    depends(x:package_loc|package_loc[]|{[key: string]:string}):package_loc[]; // ,...args
 
     //------------------------------
     // ENUMERATION 
@@ -181,7 +181,7 @@ export interface sync_repository<T> {
 
     fetchOne(x:package_loc,opts?:fetch_opts):resource_data<T>;
 
-    depends(x:package_loc|package_loc[]|{[key: string]:string},...args):package_loc[];
+    depends(x:package_loc|package_loc[]|{[key: string]:string}):package_loc[]; // ,...args
 
     //------------------------------
     // ENUMERATION 
