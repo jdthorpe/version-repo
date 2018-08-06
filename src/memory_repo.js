@@ -156,7 +156,7 @@ var MemoryRepo = /** @class */ (function () {
         if (!loc.version) {
             throw new Error("Version parameter is required when deleting a package");
         }
-        if (!(this.store[loc.name][loc.version])) {
+        if (!(this.store[loc.name].hasOwnProperty(loc.version))) {
             throw new Error("No such version: " + loc.version);
         }
         if (this.config.update === undefined || this.config.delete == "latest") {

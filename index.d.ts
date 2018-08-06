@@ -58,7 +58,7 @@ export declare class MemoryRepo<T> extends SYNC_REPOSITORY<T> implements sync_re
 // export { ReadonlyBuffer } from "./src/buffer";
 export declare class ReadonlyBuffer<T> extends DEFERRED_READABLE_REPOSITORY<T> implements deferred_readable_repository<T> { 
     constructor(remote_store:readable_repository<T>,
-                options:ConfigOptions|MemoryRepo<T>)
+                options?:ConfigOptions|MemoryRepo<T>)
 }
 
 // export class sTransform<S,T>  implements sync_repository<T> {
@@ -80,7 +80,7 @@ export declare class dTransform<S,T> extends DEFERRED_READABLE_REPOSITORY<T> imp
 export declare class ProcessedBuffer<S,T> extends DEFERRED_READABLE_REPOSITORY<T> implements deferred_readable_repository<T> {
     constructor(remote_store:deferred_readable_repository<S>,
                 process:{(x:S):(T|Promise<T>)},
-                options:ConfigOptions|MemoryRepo<T>)
+                options?:ConfigOptions|MemoryRepo<T>)
 }
 
 // export { RemoteRepo } from "./src/remote_repo";
