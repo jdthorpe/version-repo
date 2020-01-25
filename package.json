@@ -35,10 +35,10 @@
         "@types/semver": "^5.5.0",
         "ajv": "^6.4.0",
         "ajv-semver": "^1.0.4",
-        "bluebird": "^3.5.3",
-        "semver": "^5.5.1",
-        "superagent": "^3.8.2",
-        "superagent-bluebird-promise": "^4.1.0"
+        "bluebird": "^3.7.2",
+        "semver": "^7.1.1",
+        "superagent": "^5.2.1",
+        "superagent-bluebird-promise": "^4.2.0"
     },
     "types": "index.d.ts"
 }
