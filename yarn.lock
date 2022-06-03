@@ -755,9 +755,9 @@ safe-buffer@~5.2.0:
   integrity sha512-fZEwUGbVl7kouZs1jCdMLdt95hdIv0ZeHg6L7qPeciMZhZ+/gdesW4wgTARkrFWEpspjEATAzUGPG8N2jJiwbg==
 
 semver-regex@^3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/semver-regex/-/semver-regex-3.1.1.tgz#9a13c93a9ecf2ac7415c0785acc1c7a19199bfd0"
-  integrity sha512-3dPcmFqxblWB/cppQ2qXWqlp9b6GLgAS032+Ec5E0waDVHTkwYIL+7BFI9UqEe0tkoHle2f3pBgvT/Xl95+Dig==
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/semver-regex/-/semver-regex-3.1.4.tgz#13053c0d4aa11d070a2f2872b6b1e3ae1e1971b4"
+  integrity sha512-6IiqeZNgq01qGf0TId0t3NvKzSvUsjcpdEO3AQNeIjR6A2+ckTnQlDpl4qu1bjRv0RzN3FP9hzFmws3lKqRWkA==
 
 semver@^5.7.0:
   version "5.7.1"
